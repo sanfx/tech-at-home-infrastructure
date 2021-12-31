@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  dashy:
+    image: lissy93/dashy
+    hostname: "{{dashboard_app_name}}"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml:/app/public/conf.yml:ro
+    ports:
+      - 8081:80
+    # Set any environmental variables
+    environment:
+      - NODE_ENV=production
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dashy-http.rule=Host(`{{dashboard_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.routers.dashy-http.entrypoints={{traefik_network_name}}"
+        - "traefik.http.services.dashy-http.loadbalancer.server.port={{dashy_web_port}}"
+        - "traefik.http.services.dashy-http.loadbalancer.passhostheader=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}
+
+volumes:
+  dashy_config:

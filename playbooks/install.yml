@@ -1,33 +1,88 @@
 ---
-- hosts: all
+- hosts: localhost
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+    - repo-pass.yml
   tasks:
-    - include_vars: "{{playbook_dir}}/config.yml"
-    - import_role:
-        name: host-defaults
+    - name: clone a repo
+      git:
+        repo: https://sanfx:{{password}}@github.com/sanfx/vault.git
+        dest: "{{config_dir}}"
+
+- hosts: all
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    - block:
+        - include_vars: "{{config_dir}}/config.yml"
+        - import_role:
+            name: host-defaults        
+      rescue:
+        - set_fact:
+            role_failed: true
 
 - hosts: swarm_managers
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
   tasks:
-    - include_vars: "{{playbook_dir}}/config.yml"
-    - import_role:
-        name: docker
-    - import_role:
-        name: swarm-managers
+    - block:
+        - include_vars: "{{config_dir}}/config.yml"
+        - import_role:
+            name: docker
+        - import_role:
+            name: swarm-managers
+      rescue:
+        - set_fact:
+            role_failed: true
 
 - hosts: swarm_workers
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
   tasks:
-    - include_vars: "{{playbook_dir}}/config.yml"
-    - import_role:
-        name: docker
-    - import_role:
-        name: swarm-workers
+    - block:
+        - include_vars: "{{config_dir}}/config.yml"
+        - import_role:
+            name: docker
+        - import_role:
+            name: swarm-workers
+      rescue:
+        - set_fact:
+            role_failed: true
 
 - hosts: swarm_managers
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
   tasks:
-    - include_vars: "{{playbook_dir}}/config.yml"
-    - import_role:
-        name: traefik
-    - import_role:
-        name: cluster_monitor
-    - import_role:
-        name: pihole_doh
+    - block:
+        - include_vars: "{{config_dir}}/config.yml"
+        - import_role:
+            name: traefik
+        - import_role:
+            name: cluster_monitor
+        - import_role:
+            name: dns_stack
+        - import_role:
+            name: web
+      rescue:
+        - set_fact:
+            role_failed: true
 
+- hosts: localhost
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  tasks:
+    - name: clean this repo.
+      file:
+        state: absent
+        path: "{{config_dir}}"
+      tags:
+        - always
+        - repo-clean

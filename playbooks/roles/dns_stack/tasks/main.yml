@@ -1,0 +1,96 @@
+---
+- name: Verify stacks directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  file:
+    path: "/home/{{ansible_user}}/stacks"
+    state: directory
+
+- name: Verify pihole directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/pihole"
+    state: directory
+
+- name: Copy Prometheus rules with owner and permissions
+  when: inventory_hostname == groups['swarm_managers'][0]
+  ansible.builtin.copy:
+    src: ./config
+    dest: /home/{{ansible_user}}/stacks/dnsmasq
+    mode: '0644'
+
+- name: Verify pihole exporter directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/pihole/exporter"
+    state: directory
+
+- name: Ensure group "pihole" exists
+  tags: ["pihole"]
+  group:
+    name: pihole
+    state: present
+
+- name: Add user "pihole"  
+  tags: ["pihole"]
+  user:
+    name: pihole
+    groups: pihole
+    shell: /sbin/nologin
+    append: yes
+    comment: "Pihole nologin User"
+    state: present
+
+- name: Verify /etc/pihole directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  file:
+    path: "/etc/pihole"
+    state: directory
+    owner: "pihole"
+    group: "pihole"
+    mode: 0775
+
+- name: Verify lighttpd directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/lighttpd"
+    state: directory
+
+- name: Create docker-compose stack file for Pihole and DOH(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  template:
+    src: dns-stack.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
+    mode: 0775
+
+# - name: Copy Lighttpd config files with owner and permissions
+#   when: inventory_hostname == groups['swarm_managers'][0]
+#   tags: ["pihole"]
+#   ansible.builtin.copy:
+#     src: ./files
+#     dest: /home/{{ansible_user}}/stacks/lighttpd
+#     owner: "{{ansible_user}}"
+#     group: "{{ansible_user}}"
+#     mode: '0644'
+
+- name: Deploy Pihole and DOH stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["pihole"]
+  docker_stack:
+    state: present
+    name: dns_pihole_doh
+    compose:
+      - /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
+
+- name: Create lighttpd external configuration file for Pihole and DOH(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: lighttpd-external.j2
+    dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
+  tags: ['lighttpd']
+ 

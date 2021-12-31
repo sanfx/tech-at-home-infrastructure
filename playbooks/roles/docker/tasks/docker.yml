@@ -7,16 +7,19 @@
     name: docker
     version: 5.0.3
     state: present
+  tags: ["docker"]
 
 - name: Install Docker GPG key
   become: true
   become_method: sudo
   shell: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+  tags: ["docker"]
 
 - name: Add Docker repository
   become: true
   become_method: sudo
   shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  tags: ["docker"]
 
 - name: Install Docker
   become: true
@@ -29,9 +32,11 @@
     state: present
     force_apt_get: true
     update_cache: yes
+  tags: ["docker"]
 
 - name: Add "{{ansible_user}}" user to "docker" group
   become: true
   become_method: sudo
   shell: "adduser {{ansible_user}} docker"
+  tags: ["docker"]
   

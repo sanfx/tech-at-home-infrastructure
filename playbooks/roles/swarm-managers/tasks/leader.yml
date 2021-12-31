@@ -1,9 +1,11 @@
 ---
 - name: clean apt archive
+  tags: ["apt"]
   shell: apt clean
   become: yes
 
 - name: cleanup dangling images
+  tags: ["apt"]
   shell: |
     oldimage=`docker images | grep '<none>' | awk '{print $3}'`
     if [ -z "$oldimage" ]
@@ -17,24 +19,28 @@
 
 - name: Check if Swarm has already been initialized
   become: yes
+  tags: ["docker"]
   shell: docker node ls
   register: swarm_status
   ignore_errors: true
 
 - name: Initialize new Docker Swarm Leader
   become: yes
+  tags: ["docker"]
   shell: docker swarm init --advertise-addr={{ inventory_hostname }}
   when: swarm_status.rc != 0 and inventory_hostname == groups['swarm_managers'][0]
   run_once: true
 
 - name: Get the Manager join-token
   become: yes
+  tags: ["docker"]
   shell: docker swarm join-token --quiet manager
   when: inventory_hostname == groups['swarm_managers'][0]
   register: manager_token
 
 - name: Get the worker join-token
   become: yes
+  tags: ["docker"]
   when: inventory_hostname == groups['swarm_managers'][0]
   shell: docker swarm join-token --quiet worker
   register: worker_token

@@ -1,6 +1,7 @@
 ---
 - name: Verify stacks directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["traefik"]
   file:
     path: "/home/{{ansible_user}}/stacks"
     state: directory
@@ -8,10 +9,12 @@
 - name: Generate admin password hash
   when: inventory_hostname == groups['swarm_managers'][0]
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
+  tags: ["traefik"]
   register: traefikpassword
 
 - name: Create docker-compose stack file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["traefik"]
   template:
     src: traefik-stack.j2
     dest: /home/{{ansible_user}}/stacks/traefik-stack.yml
@@ -41,12 +44,15 @@
     - "/var/log/traefik.log"
     - "/var/log/access.log"
   become: true
+  tags: ["traefik"]
   become_method: sudo
   ignore_errors: true
 
 - name: Deploy stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["traefik"]
+  become: true
+  become_method: sudo
   docker_stack:
     state: present
     name: traefik
