@@ -1,0 +1,49 @@
+---
+- name: Remove useless packages from the cache
+  ignore_errors: yes
+  become: true
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  ignore_errors: yes
+  become: true
+  apt:
+    autoremove: yes
+
+- name: cleanup dangling images
+  shell: |
+    oldimage=`docker images | grep '<none>' | awk '{print $3}'`
+    if [ -z "$oldimage" ]
+    then
+    echo "There is no dangling images found!"
+    else
+    docker rmi ${oldimage} -f
+    fi
+  ignore_errors: yes
+  become: true
+
+- name: Check if Swarm has already been initialized
+  shell: docker node ls
+  register: swarm_status
+  become: yes
+  ignore_errors: true
+
+- name: Get info on docker host
+  docker:
+    host_info: yes
+  register: result
+  ignore_errors: true
+
+- name: is node part of swarm
+  shell: docker system info | grep Swarm | awk '{print $NF}'
+  register: swarm_worker_status
+  become: yes
+  ignore_errors: true
+
+- name: Add Docker node to exisiting Swarn.
+  when: "'{{swarm_worker_status.stdout}}' == 'inactive'"
+  shell: docker swarm join --token {{ hostvars[groups['swarm_managers'][0]]['worker_token']['stdout'] }}  {{ hostvars[groups['swarm_managers'][0]]['ansible_enp0s9']['ipv4']['address'] }}:2377
+  become: yes
+  ignore_errors: false
+

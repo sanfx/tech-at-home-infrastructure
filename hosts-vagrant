@@ -1,0 +1,11 @@
+[swarm_managers]
+192.168.1.152
+
+[swarm_workers]
+192.168.1.201
+192.168.1.202
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=ansible
+ansible_ssh_private_key_file=~/ansible/.ssh/id_rsa

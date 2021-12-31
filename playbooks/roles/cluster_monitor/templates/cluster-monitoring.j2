@@ -1,0 +1,212 @@
+version: '3.7'
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}
+
+volumes:
+    prometheus: {}
+    grafana: {}
+    alertmanager: {}
+
+configs:
+  node_rules:
+    file: /home/{{ansible_user}}/stacks/prometheus/rules/swarm_node.rules.yml
+  task_rules:
+    file: /home/{{ansible_user}}/stacks/prometheus/rules/swarm_task.rules.yml
+
+services:
+  dockerd-exporter:
+    image:  stefanprodan/dockerd-exporter:latest
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - DOCKER_GWBRIDGE_IP=172.18.0.1
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  cadvisor:
+    image: google/cadvisor
+    networks:
+      - {{traefik_network_name}}
+    command: -logtostderr -docker_only
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  grafana:
+    image: bankainojutsu/grafana-multiarch:latest
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-localhost}
+      #- GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
+      #- GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS:-grafana@test.com}
+      #- GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME:-Grafana}
+      #- GF_SMTP_HOST=${GF_SMTP_HOST:-smtp:25}
+      #- GF_SMTP_USER=${GF_SMTP_USER}
+      #- GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - "{{grafana_listen_port}}:{{grafana_listen_port}}"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`{{grafana_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.middlewares.do-compress.compress=true"
+        - "traefik.http.routers.grafana.middlewares=do-compress"
+        - "traefik.http.services.grafana.loadbalancer.server.port={{grafana_listen_port}}"
+        - "traefik.http.routers.grafana.entrypoints={{traefik_network_name}}"
+        - "traefik.docker.network={{traefik_network_name}}"
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  alertmanager:
+    image: stefanprodan/swarmprom-alertmanager:v0.14.0
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - "SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/TOKEN}"
+      - "SLACK_CHANNEL=${SLACK_CHANNEL:-general}"
+      - "SLACK_USER=${SLACK_USER:-alertmanager}"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - alertmanager:/alertmanager
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  unsee:
+    image: cloudflare/unsee:v0.8.0
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - "ALERTMANAGER_URIS=default:http://alertmanager:9093"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.unsee.rule=Host(`{{unsee_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.services.unsee.loadbalancer.server.port={{unsee_listen_port}}"
+        - "traefik.http.routers.unsee.entrypoints={{traefik_network_name}}"
+        - "traefik.docker.network={{traefik_network_name}}"
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  node-exporter:
+    image: stefanprodan/swarmprom-node-exporter:v0.16.0
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - NODE_ID="{{ansible_facts['nodename']}}"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename
+    command:
+      - '--path.sysfs=/host/sys'
+      - '--path.procfs=/host/proc'
+      - '--collector.textfile.directory=/etc/node-exporter/'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--no-collector.ipvs'
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+
+  prometheus:
+    image: stefanprodan/swarmprom-prometheus:v2.5.0
+    networks:
+      - {{traefik_network_name}}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=${PROMETHEUS_RETENTION:-24h}'
+    volumes:
+      - prometheus:/prometheus
+    configs:
+      - source: node_rules
+        target: /etc/prometheus/swarm_node.rules.yml
+      - source: task_rules
+        target: /etc/prometheus/swarm_task.rules.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 128M

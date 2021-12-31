@@ -1,0 +1,37 @@
+---
+
+- name: Install Docker Python library
+  become: true
+  become_method: sudo
+  pip:
+    name: docker
+    version: 5.0.3
+    state: present
+
+- name: Install Docker GPG key
+  become: true
+  become_method: sudo
+  shell: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+
+- name: Add Docker repository
+  become: true
+  become_method: sudo
+  shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+- name: Install Docker
+  become: true
+  become_method: sudo
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+    force_apt_get: true
+    update_cache: yes
+
+- name: Add "{{ansible_user}}" user to "docker" group
+  become: true
+  become_method: sudo
+  shell: "adduser {{ansible_user}} docker"
+  

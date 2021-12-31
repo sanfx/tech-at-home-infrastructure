@@ -1,0 +1,40 @@
+---
+- name: clean apt archive
+  shell: apt clean
+  become: yes
+
+- name: cleanup dangling images
+  shell: |
+    oldimage=`docker images | grep '<none>' | awk '{print $3}'`
+    if [ -z "$oldimage" ]
+    then
+    echo "There is no dangling images found!"
+    else
+    docker rmi ${oldimage} -f
+    fi
+  ignore_errors: yes
+  become: true
+
+- name: Check if Swarm has already been initialized
+  become: yes
+  shell: docker node ls
+  register: swarm_status
+  ignore_errors: true
+
+- name: Initialize new Docker Swarm Leader
+  become: yes
+  shell: docker swarm init --advertise-addr={{ inventory_hostname }}
+  when: swarm_status.rc != 0 and inventory_hostname == groups['swarm_managers'][0]
+  run_once: true
+
+- name: Get the Manager join-token
+  become: yes
+  shell: docker swarm join-token --quiet manager
+  when: inventory_hostname == groups['swarm_managers'][0]
+  register: manager_token
+
+- name: Get the worker join-token
+  become: yes
+  when: inventory_hostname == groups['swarm_managers'][0]
+  shell: docker swarm join-token --quiet worker
+  register: worker_token

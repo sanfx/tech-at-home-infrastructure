@@ -1,0 +1,50 @@
+---
+- name: Verify stacks directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: "/home/{{ansible_user}}/stacks"
+    state: directory
+
+- name: Verify pihole directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: "/home/{{ansible_user}}/stacks/pihole"
+    state: directory
+
+- name: Verify lighttpd directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: "/home/{{ansible_user}}/stacks/lighttpd"
+    state: directory
+
+- name: Create docker-compose stack file for Pihole and DOH(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: pihole-stack.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
+    mode: 0775
+
+- name: Copy Lighttpd config files with owner and permissions
+  when: inventory_hostname == groups['swarm_managers'][0]
+  ansible.builtin.copy:
+    src: ./files
+    dest: /home/{{ansible_user}}/stacks/lighttpd
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Deploy Pihole and DOH stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: pihole_doh
+    compose:
+      - /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
+
+- name: Create lighttpd external configuration file for Pihole and DOH(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: lighttpd-external.j2
+    dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
+  tags: ['lighttpd']
+ 
