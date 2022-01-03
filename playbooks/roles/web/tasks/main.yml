@@ -21,13 +21,11 @@
     state: directory
 
 - name: Check that the conf.yml exists
-  become: yes
   stat:
     path: /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml
   register: stat_result
 
 - name: Create the dashy conf file, if it doesnt exist already
-  become: yes
   file:
     path: /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml
     state: touch

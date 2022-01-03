@@ -1,5 +1,0 @@
-### TODO
-* Need to update dashy config.
-* Fix Prometheus container config.
-* Setup GlusterFS
-* Remove `become: yes` from all over and set in install.yml.

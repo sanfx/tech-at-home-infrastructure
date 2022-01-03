@@ -68,16 +68,6 @@
     dest: /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
     mode: 0775
 
-# - name: Copy Lighttpd config files with owner and permissions
-#   when: inventory_hostname == groups['swarm_managers'][0]
-#   tags: ["pihole"]
-#   ansible.builtin.copy:
-#     src: ./files
-#     dest: /home/{{ansible_user}}/stacks/lighttpd
-#     owner: "{{ansible_user}}"
-#     group: "{{ansible_user}}"
-#     mode: '0644'
-
 - name: Deploy Pihole and DOH stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["pihole"]

@@ -1,21 +1,18 @@
 ---
 - name: Verify stacks directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   file:
     path: "/home/{{ansible_user}}/stacks"
     state: directory
 
 - name: Verify prometheus directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus"
     state: directory
 
 - name: Ensure group "9090" exists
   tags: ["monitor"]
-  become: true
   group:
     name: "9090"
     state: present
@@ -29,11 +26,9 @@
     append: yes
     comment: "9090 nologin User"
     state: present
-  become: true
 
 - name: Verify prometheus directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus/data"
     state: directory
@@ -43,14 +38,12 @@
 
 - name: Verify prometheus config directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   file:
     path: "/etc/prometheus"
     state: directory
 
 - name: Create docker-compose stack file for cluster monitor(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   template:
     src: cluster-monitoring.j2
     dest: /home/{{ansible_user}}/stacks/cluster-monitoring-stack.yml
@@ -58,7 +51,6 @@
 
 - name: Copy Prometheus rules with owner and permissions
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   ansible.builtin.copy:
     src: ./rules
     dest: /home/{{ansible_user}}/stacks/prometheus
@@ -68,7 +60,6 @@
 
 - name: Create prometheus config file for cluster monitor(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   template:
     src: prometheus-config.j2
     dest: /etc/prometheus/prometheus.yml
@@ -77,7 +68,6 @@
 
 - name: Deploy cluster monitoring stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  become: yes
   docker_stack:
     state: present
     name: cluster_monitoring

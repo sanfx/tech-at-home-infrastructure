@@ -11,13 +11,13 @@ services:
       - {{traefik_network_name}}
     deploy:
       mode: replicated
-      replicas: 0
+      replicas: 1
       placement:
         constraints:
            - "node.hostname==swarm-master"
 
   dnsmasq:
-    image: jpillora/dnsmasq
+    image: jpillora/dnsmasq:latest
     ports:
       - target: 53
         published: 53
