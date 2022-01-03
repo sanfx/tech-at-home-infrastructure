@@ -51,7 +51,7 @@ This stack is also responsible for creating default network from which all conta
 | DNSMASQ | Replicated | Workers|
 
 
-7. **Web ** - This stack runs dashy dashboard , I plan to add wordpress and other web browser based applications here.
+7. **Web** - This stack runs dashy dashboard , I plan to add wordpress and other web browser based applications here.
 
 | Containers | Mode | Host|
 |:-------:|:---:|:---:|
