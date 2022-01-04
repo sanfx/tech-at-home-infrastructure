@@ -1,0 +1,72 @@
+
+version: '3.7'
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    hostname: "{{pihole_app_name}}"
+    user: "root:root"
+    privileged: true
+    ports:
+      - target: {{pihole_ftl_dns_port}}
+        published: {{pihole_ftl_dns_port}}
+        mode: host
+        protocol: udp
+      - target: {{pihole_web_port}}
+        published: 8085
+        mode: host
+        protocol: tcp
+    restart: always
+    volumes:
+      - /etc/pihole:/etc/pihole
+      - "/home/{{ansible_user}}/stacks/lighttpd/external.conf:/etc/lighttpd/external.conf"
+      - dnsmasq:/etc/dnsmasq.d
+    environment:
+      - "TZ=Europe/London"
+      - "DNS1=1.1.1.1"
+      - "DNS2=8.8.4.4"
+      - "REV_SERVER=true"
+      - "REV_SERVER_CIDR=192.168.1.0/24" #Update these fields to match your environment
+      - "REV_SERVER_TARGET={{REV_SERVER_TARGET}}"
+      - "REV_SERVER_DOMAIN={{app_domain_name}}"
+      - "WEBPASSWORD={{pihole_web_password}}"
+    cap_add:
+        - SYS_PTRACE
+    networks:
+      - {{traefik_network_name}}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole-http.rule=Host(`{{pihole_app_name}}.{{app_domain_name}}`)"
+      - "traefik.http.routers.pihole-http.entrypoints={{traefik_network_name}}"
+      - "traefik.http.middlewares.add-admin-prefix.addprefix.prefix=/admin"
+      - "traefik.http.routers.pihole-http.middlewares=add-admin-prefix"
+      - "traefik.http.services.pihole-http.loadbalancer.server.port={{pihole_web_port}}"
+      - "traefik.http.services.pihole-http.loadbalancer.passhostheader=true"
+      - "traefik.http.services.pihole-http.loadbalancer.healthcheck.scheme={{pihole_web_protocol}}"
+
+  pihole_exporter:
+    image: ekofr/pihole-exporter:latest
+    hostname: pihole_exporter
+    restart: always
+    networks:
+      - {{traefik_network_name}}
+    command: "./pihole-exporter -pihole_hostname 192.168.1.152 -pihole_password {{pihole_web_password}}"
+    environment:
+      - "PIHOLE_PORT={{pihole_web_port}}"
+      - "PIHOLE_PASSWORD={{pihole_web_password}}"
+      - "PIHOLE_API_TOKEN={{pihole_api_token}}"
+      - "INTERVAL=30s"
+      - "PORT={{pihole_exporter_port}}"
+    ports:
+      - target: {{pihole_exporter_port}}
+        published: {{pihole_exporter_port}}
+        mode: host
+   
+
+volumes:
+  dnsmasq:
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}

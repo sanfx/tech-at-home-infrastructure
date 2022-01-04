@@ -13,6 +13,13 @@
     path: "/home/{{ansible_user}}/stacks/pihole"
     state: directory
 
+- name: Verify dns directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["dns"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/dns"
+    state: directory
+
 - name: Copy Prometheus rules with owner and permissions
   when: inventory_hostname == groups['swarm_managers'][0]
   ansible.builtin.copy:
@@ -60,22 +67,30 @@
     path: "/home/{{ansible_user}}/stacks/lighttpd"
     state: directory
 
-- name: Create docker-compose stack file for Pihole and DOH(on first swarm node)
+- name: Create docker-compose stack file for DNS and DOH(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["dns"]
+  template:
+    src: dns-stack.j2
+    dest: /home/{{ansible_user}}/stacks/dns/dns-doh-stack.yml
+    mode: 0775
+
+- name: Deploy DNSMasq and DOH stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["dns"]
+  docker_stack:
+    state: present
+    name: dns_doh
+    compose:
+      - /home/{{ansible_user}}/stacks/dns/dns-doh-stack.yml
+
+- name: Create docker-compose file for Pihole(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["pihole"]
   template:
-    src: dns-stack.j2
-    dest: /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
+    src: pihole-stack.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/docker-compose.yml
     mode: 0775
-
-- name: Deploy Pihole and DOH stack from a compose file (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["pihole"]
-  docker_stack:
-    state: present
-    name: dns_pihole_doh
-    compose:
-      - /home/{{ansible_user}}/stacks/pihole/pihole-doh-stack.yml
 
 - name: Create lighttpd external configuration file for Pihole and DOH(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
@@ -84,3 +99,27 @@
     dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
   tags: ['lighttpd']
  
+- name: Docker compose Service file creation for Pihole
+  tags: ["pihole"]
+  copy:
+    dest: /etc/systemd/system/docker-compose.service
+    content: |
+      [Unit]
+      Description=Docker Compose Service
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/home/{{ansible_user}}/stacks/pihole/
+      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+      ExecStop=/usr/local/bin/docker-compose down
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Systemd service activation
+  tags: ["pihole"]
+  systemd:
+    name: docker-compose.service
+    enabled: yes
+    state: started
