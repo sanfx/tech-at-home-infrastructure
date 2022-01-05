@@ -8,14 +8,8 @@ services:
     user: "root:root"
     privileged: true
     ports:
-      - target: {{pihole_ftl_dns_port}}
-        published: {{pihole_ftl_dns_port}}
-        mode: host
-        protocol: udp
-      - target: {{pihole_web_port}}
-        published: 8085
-        mode: host
-        protocol: tcp
+      - "{{pihole_ftl_dns_port}}:{{pihole_ftl_dns_port}}/udp"
+      - "8085:{{pihole_web_port}}"
     restart: always
     volumes:
       - /etc/pihole:/etc/pihole
