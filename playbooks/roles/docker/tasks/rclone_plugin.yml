@@ -1,0 +1,32 @@
+---
+- name: Gather package facts
+  tags: ["rclone"]
+  package_facts:
+    manager: apt
+
+- name: Install fuse if it is absent
+  tags: ["rclone"]
+  apt:
+    name: fuse
+    state: present
+  when: '"fuse" not in ansible_facts.packages'
+
+- name: create rclone directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /var/lib/docker-plugins/rclone/cache
+    - /var/lib/docker-plugins/rclone/config
+
+- name: check if rclone has been installed on {{ inventory_hostname }} nodes
+  shell: docker plugin ls | grep -n  rclone
+  register: rclone_plugin_installed
+  changed_when: no
+  ignore_errors: True
+
+- name: "Install Docker Rclone plugin on {{inventory_hostname}}"
+  when: "not rclone_plugin_installed"
+  shell: docker plugin install rclone/docker-volume-rclone --grant-all-permissions --alias rclone
+  tags: ["rclone"]
+

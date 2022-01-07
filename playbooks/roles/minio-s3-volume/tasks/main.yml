@@ -1,0 +1,31 @@
+---
+- name: "Install docekr-py on {{instance_name}} ."
+  pip:
+    name: docker-py
+  tags: ["minio"]
+
+- name: find volume {{minio_volume_name}} has been mounted.
+  tags: ["minio"]
+  docker_volume_info:
+    name: "{{minio_volume_name}}"
+  register: vlm_res
+
+# - assert:
+#     that:
+#     - "not vlm_res.exists"
+#     - "'volume' in vlm_res"
+#     - "vlm_res.volume is none"
+
+- name: initialize minio s3 volume on {{instance_name}} if it is not.
+  when: not vlm_res.exists
+  tags: ["minio"]
+  shell: |
+        docker volume create {{minio_volume_name}} -d rclone -o type=s3  -o s3-provider=Minio -o s3-env_auth=false -o s3-access_key_id={{minio_access_key_id}} -o s3-secret_access_key={{minio_secret_access_key}} -o s3-endpoint={{minio_endpoint_protocol}}://{{minio_ip_address}}:{{minio_port_address}}
+
+- name: Print information about volume
+  tags: ["minio"]
+  debug:
+    var: vlm_res.exists
+
+  
+  

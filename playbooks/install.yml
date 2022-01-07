@@ -35,6 +35,8 @@
             name: docker
         - import_role:
             name: swarm-managers
+        - import_role:
+            name: minio-s3-volume
       rescue:
         - set_fact:
             role_failed: true
@@ -50,6 +52,8 @@
             name: docker
         - import_role:
             name: swarm-workers
+        - import_role:
+            name: minio-s3-volume
       rescue:
         - set_fact:
             role_failed: true

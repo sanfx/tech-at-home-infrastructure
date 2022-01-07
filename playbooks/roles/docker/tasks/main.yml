@@ -1,3 +1,4 @@
 ---
 - import_tasks: docker.yml
+- import_tasks: rclone_plugin.yml
 # - import_tasks: plugins.yml

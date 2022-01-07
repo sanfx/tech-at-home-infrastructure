@@ -27,16 +27,16 @@ services:
     cap_add:
         - SYS_PTRACE
     networks:
-      - {{traefik_network_name}}
+      - bridge
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pihole-http.rule=Host(`{{pihole_app_name}}.{{app_domain_name}}`)"
       - "traefik.http.routers.pihole-http.entrypoints={{traefik_network_name}}"
       - "traefik.http.middlewares.add-admin-prefix.addprefix.prefix=/admin"
-      - "traefik.http.routers.pihole-http.middlewares=add-admin-prefix"
-      - "traefik.http.services.pihole-http.loadbalancer.server.port={{pihole_web_port}}"
-      - "traefik.http.services.pihole-http.loadbalancer.passhostheader=true"
-      - "traefik.http.services.pihole-http.loadbalancer.healthcheck.scheme={{pihole_web_protocol}}"
+      - "traefik.http.routers.pihole-http.middlewares=add-admin-prefix@docker"
+      - "traefik.http.routers.pihole-http.service=pihole-http-svc"
+      - "traefik.http.services.pihole-http-svc.loadbalancer.server.port={{pihole_web_port}}"
+      - "traefik.http.services.pihole-http-svc.loadbalancer.passhostheader=true"
 
   pihole_exporter:
     image: ekofr/pihole-exporter:latest
