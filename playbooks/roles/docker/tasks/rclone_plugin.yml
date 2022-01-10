@@ -19,14 +19,13 @@
     - /var/lib/docker-plugins/rclone/cache
     - /var/lib/docker-plugins/rclone/config
 
-- name: check if rclone has been installed on {{ inventory_hostname }} nodes
+- name: check if rclone has been installed on {{ansible_hostname }} nodes
   shell: docker plugin ls | grep -n  rclone
   register: rclone_plugin_installed
   changed_when: no
   ignore_errors: True
 
-- name: "Install Docker Rclone plugin on {{inventory_hostname}}"
-  when: "not rclone_plugin_installed"
+- name: "Install Docker Rclone plugin on {{ansible_hostname}}"
   shell: docker plugin install rclone/docker-volume-rclone --grant-all-permissions --alias rclone
   tags: ["rclone"]
 

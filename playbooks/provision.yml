@@ -59,12 +59,14 @@
         - gnupg-agent
         - software-properties-common
         - python3-pip
-        - python-pip
         - apache2-utils
       state: present
       force_apt_get: true
       update_cache: yes
     tags: ["apt"]
+    until: result is not failed
+    retries: 20
+    delay: 30
 
   - name: Install Docker GPG key
     become: true

@@ -1,8 +1,8 @@
 ---
-- name: "Install docekr-py on {{instance_name}} ."
-  pip:
-    name: docker-py
-  tags: ["minio"]
+# - name: "Install docekr-py on {{instance_name}} ."
+#   pip:
+#     name: docker-py
+#   tags: ["minio"]
 
 - name: find volume {{minio_volume_name}} has been mounted.
   tags: ["minio"]

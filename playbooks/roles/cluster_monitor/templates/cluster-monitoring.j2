@@ -9,6 +9,7 @@ volumes:
     prometheus: {}
     grafana: {}
     alertmanager: {}
+    {{minio_volume_name}}: {}
 
 configs:
   prometheus_config:
@@ -17,6 +18,7 @@ configs:
     file: /home/{{ansible_user}}/stacks/prometheus/rules/swarm_node.rules.yml
   task_rules:
     file: /home/{{ansible_user}}/stacks/prometheus/rules/swarm_task.rules.yml
+
 
 services:
   dockerd-exporter:
@@ -78,6 +80,7 @@ services:
       #- GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
     volumes:
       - grafana:/var/lib/grafana
+      - {{minio_volume_name}}:/mnt
     ports:
       - "{{grafana_listen_port}}:{{grafana_listen_port}}"
     deploy:
