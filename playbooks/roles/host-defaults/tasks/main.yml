@@ -1,10 +1,12 @@
 ---
 - name: Check if auto update is enabled
+  tags: ["rclone"]
   stat:
     path: /etc/apt/apt.conf.d/20auto-upgrades
   register: autoupdate
 
 - name: Disable auto update
+  tags: ["rclone"]
   when: autoupdate.stat.exists
   become: true
   become_method: sudo
@@ -13,6 +15,7 @@
     state: absent
 
 - name: Register the system release
+  tags: ["rclone"]
   raw: uname -r
   register: linux_revision
   changed_when: no
@@ -24,6 +27,24 @@
     path: /etc/resolv.conf
     line: 'nameserver 1.1.1.1'
     insertbefore: BOF
+
+- name: Upgrade all packages to the latest version
+  tags: ["apt"]
+  apt:
+    name: "*"
+    state: latest
+    force_apt_get: true
+    update_cache: yes
+
+- name: Install jsondiff Python library
+  pip:
+    name: jsondiff
+  tags: ["pip"]
+
+- name: Install pyyaml Python library
+  tags: ["pip"]
+  pip:
+    name: pyyaml
 
 - name: Install fuse if it is absent
   tags: ["rclone"]
@@ -38,51 +59,81 @@
     state: present
 
 - name: Unarchive a file that is already on the remote machine
+  tags: ["rclone"]
   ansible.builtin.unarchive:
     src: "https://downloads.rclone.org/{{rclone_version}}/rclone-{{rclone_version}}-{{ansible_system|lower}}-amd64.zip"
     dest: /tmp/
     remote_src: yes
 
 - name: Move rclone to /usr/local/bin
+  tags: ["rclone"]
   command: mv /tmp/rclone-{{rclone_version}}-{{ansible_system | lower}}-amd64/rclone /usr/local/bin
 
 - name: Verify mount location exists on {{ansible_hostname}}
+  tags: ["rclone"]
   file:
     path: "/mnt/{{mount_location}}"
     state: directory
 
-- name: Verify mount location exists on {{ansible_hostname}}
+- name: Verify mount location data exists on {{ansible_hostname}}
+  tags: ["rclone"]
   file:
-    path: "/mnt/data"
+    path: "/data"
     state: directory
 
 - name: Verify rclone cache directory exists
+  tags: ["rclone"]
   file:
     path: "/var/rclone"
     state: directory
 
 - name: Create rclone config file on {{ansible_hostname}}.
+  tags: ["rclone"]
   template:
     src: rclone_config.j2
     dest: /etc/rclone.conf
 
+- name: Remove rclone-mount service file.
+  tags: ["rclone"]
+  file:
+    path: /etc/systemd/system/rclone-mount.service
+    state: absent
+  register: service_file
+
 - name: Create rclone systemd rclone service file on {{ansible_hostname}}.
+  tags: ["rclone"]
   template:
     src: rclone-mount.j2
     dest: /etc/systemd/system/rclone-mount.service
 
+- name: Remove rclone-mount-data service file.
+  tags: ["rclone"]
+  file:
+    path: /etc/systemd/system/rclone-mount-data.service
+    state: absent
+  register: service_file
+
+- name: Create rclone systemd rclone service file on {{ansible_hostname}}.
+  tags: ["rclone"]
+  template:
+    src: rclone-mount-data.j2
+    dest: /etc/systemd/system/rclone-mount-data.service
+
+- name: Force systemd to reload if necassary
+  tags: ["rclone"]
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: service_file.changed
+
 - name: Enable rclone-mount.service systemd unit {{ansible_hostname}}
+  tags: ["rclone"]
   ansible.builtin.systemd:
     name: rclone-mount.service
     enabled: yes
     state: started
 
-- name: Create rclone systemd rclone service file on {{ansible_hostname}}.
-  template:
-    src: rclone-mount-data.j2
-    dest: /etc/systemd/system/rclone-mount-data.service
-
 - name: Enable rclone-mount-data systemd service unit {{ansible_hostname}}
+  tags: ["rclone"]
   ansible.builtin.systemd:
     name: rclone-mount-data.service
     enabled: yes
@@ -122,39 +173,5 @@
 #   ignore_errors: true
 #   when: autoupdate.stat.exists and inventory_hostname != "127.0.0.1" and inventory_hostname != "localhost"
 
-- name: Upgrade all packages to the latest version
-  become: true
-  become_method: sudo
-  tags: ["apt"]
-  apt:
-    name: "*"
-    state: latest
-    force_apt_get: true
-    update_cache: yes
 
-- name: Verify system dependencies
-  apt:
-    pkg:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-    state: present
-    force_apt_get: true
-    update_cache: yes
-  tags: ["apt"]
-
-- name: Install jsondiff Python library
-  become: true
-  become_method: sudo
-  pip:
-    name: jsondiff
-  tags: ["pip"]
-
-- name: Install pyyaml Python library
-  become: true
-  become_method: sudo
-  tags: ["pip"]
-  pip:
-    name: pyyaml
 

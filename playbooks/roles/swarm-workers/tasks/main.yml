@@ -1,5 +1,7 @@
 ---
 - name: Get info on docker host
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   tags: ["docker"]
   docker_host_info:
   register: result
@@ -17,6 +19,8 @@
   register: pyver
 
 - name: print result of swarm_worker_status {{ansible_hostname}}
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   debug:
     msg:
       - "{{swarm_worker_status.stdout}}"

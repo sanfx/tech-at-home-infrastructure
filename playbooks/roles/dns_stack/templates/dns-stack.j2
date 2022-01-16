@@ -7,6 +7,14 @@ configs:
 services:
   cloudflared:
     image: visibilityspots/cloudflared
+    ports:
+      - target: 5054
+        published: 5054
+        mode: host
+        protocol: udp
+      - target: 8080
+        published: 8086
+        mode: host
     networks:
       - {{traefik_network_name}}
     deploy:
@@ -46,7 +54,7 @@ services:
         - "traefik.http.services.dnsmasq-http.loadbalancer.passhostheader=true"
         - "traefik.http.services.dnsmasq-http.loadbalancer.healthcheck.scheme={{dnsmasq_web_protocol}}"
       mode: replicated
-      replicas: 2
+      replicas: 0
       placement:
         constraints:
           - "node.role==worker"

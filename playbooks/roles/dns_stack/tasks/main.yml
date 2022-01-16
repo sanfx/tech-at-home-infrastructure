@@ -14,14 +14,15 @@
     state: directory
 
 - name: Verify dns directory exists (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
+  when: inventory_hostname != groups['swarm_managers'][0]
   tags: ["dns"]
   file:
     path: "/home/{{ansible_user}}/stacks/dns"
     state: directory
 
 - name: Copy Prometheus rules with owner and permissions
-  when: inventory_hostname == groups['swarm_managers'][0]
+  when: inventory_hostname != groups['swarm_managers'][0]
+  tags: ["dns"]
   ansible.builtin.copy:
     src: ./config
     dest: /home/{{ansible_user}}/stacks/dnsmasq
@@ -75,6 +76,14 @@
     dest: /home/{{ansible_user}}/stacks/dns/dns-doh-stack.yml
     mode: 0775
 
+- name: Systemd resolved service activation
+  when: inventory_hostname != groups['swarm_managers'][0]
+  tags: ["dns"]
+  systemd:
+    name: systemd-resolved.service
+    enabled: no
+    state: stopped
+
 - name: Deploy DNSMasq and DOH stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["dns"]
@@ -98,28 +107,73 @@
     src: lighttpd-external.j2
     dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
   tags: ['lighttpd']
- 
-- name: Docker compose Service file creation for Pihole
-  tags: ["pihole"]
+
+- name: Install gunzip if it is absent
+  tags: ["dns"]
+  apt:
+    name: gzip
+    state: present
+
+- name: Download webproc_0.4.0_linux_amd64.gz
+  tags: ["dns"]
+  get_url:
+    url: https://github.com/jpillora/webproc/releases/download/v0.4.0/webproc_0.4.0_linux_amd64.gz
+    dest: /usr/local/bin/webproc.gz
+    mode: '0777'
+
+- name: uncompress file.
+  shell: gunzip /usr/local/bin/webproc.gz 
+  tags: ["dns"]
+
+# - name: Unarchive a file that needs to be downloaded (added in 2.0)
+#   ansible.builtin.unarchive:
+#     src: https://github.com/jpillora/webproc/releases/download/v0.4.0/webproc_0.4.0_linux_amd64.gz
+#     dest: /usr/local/bin
+#     remote_src: yes
+
+- name: DNSMasq Webprox Systemd Service file creation
+  tags: ["dns"]
   copy:
-    dest: /etc/systemd/system/docker-compose.service
+    dest: /etc/systemd/system/webproc-dnsmasq.service
     content: |
       [Unit]
-      Description=Docker Compose Service
-      Requires=docker.service
-      After=docker.service
+      Description=Webproc DNSMasq Systemd Service
+      Requires=network.target
+      After=network.target
       [Service]
-      Type=oneshot
+      Type=simple
+      LimitNOFILE=1024
       RemainAfterExit=true
-      WorkingDirectory=/home/{{ansible_user}}/stacks/pihole/
-      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
-      ExecStop=/usr/local/bin/docker-compose down
+      Restart=on-failure
+      WorkingDirectory=/home/{{ansible_user}}/stacks/dnsmasq/
+      ExecStart=webproc -p {{dnsmasq_web_port}} -u {{DNSMASQ_HTTP_USER}} --pass {{DNSMASQ_HTTP_PASS}}  -c config/dnsmasq.conf  -- dnsmasq --no-daemon
+      RestartSec=5
+      KillMode=process
+      KillSignal=SIGINT
       [Install]
       WantedBy=multi-user.target
 
-- name: Systemd service activation
-  tags: ["pihole"]
+# - name: Docker compose Service file creation for Pihole
+  # tags: ["pihole"]
+  # copy:
+  #   dest: /etc/systemd/system/docker-compose.service
+  #   content: |
+  #     [Unit]
+  #     Description=Docker Compose Service
+  #     Requires=docker.service
+  #     After=docker.service
+  #     [Service]
+  #     Type=oneshot
+  #     RemainAfterExit=true
+  #     WorkingDirectory=/home/{{ansible_user}}/stacks/pihole/
+  #     ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+  #     ExecStop=/usr/local/bin/docker-compose down
+  #     [Install]
+  #     WantedBy=multi-user.target
+
+- name: DNSMasq Webprox Systemd service activation
+  tags: ["dns"]
   systemd:
-    name: docker-compose.service
+    name: webproc-dnsmasq.service
     enabled: yes
     state: started

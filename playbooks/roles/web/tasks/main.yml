@@ -20,6 +20,12 @@
     path: "/home/{{ansible_user}}/stacks/frontends/dashy"
     state: directory
 
+- name: Copy dashy config {{ansible_hostname}}
+  when: inventory_hostname == groups['swarm_managers'][0]
+  ansible.builtin.copy:
+    src: ./config/conf.yml
+    dest: /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml
+
 - name: Check that the conf.yml exists
   tags: ["web"]
   stat:
@@ -32,6 +38,25 @@
     path: /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml
     state: touch
   when: not stat_result.stat.exists
+
+# - name: Create docker-compose stack file for Frontend web ui's (on first swarm node)
+#   when: inventory_hostname == groups['swarm_managers'][0]
+#   tags: ["web"]
+#   template:
+#     src: dashy-compose.j2
+#     dest: /home/{{ansible_user}}/stacks/frontends/dashy/docker-compose.yml
+#     mode: 0775
+
+
+# - name: Deploy frontend dashy docker compose file (on first swarm node)
+#   when: inventory_hostname == groups['swarm_managers'][0]
+#   tags: ["web", "docker-compose"]
+#   docker_stack:
+#     state: present
+#     name: frontends
+#     compose:
+#       - /home/{{ansible_user}}/stacks/frontends/dashy/docker-compose.yml
+
 
 - name: Create docker-compose stack file for Frontend web ui's (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]

@@ -13,12 +13,14 @@
 
 - name: Ensure group "9090" exists
   tags: ["monitor"]
+  ignore_errors: true
   group:
     name: "9090"
     state: present
 
-- name: Add user "9090"  
+- name: Add user "9090" 
   tags: ["monitor"]
+  ignore_errors: true
   user:
     name: "9090"
     groups: wheel
@@ -32,8 +34,8 @@
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus/data"
     state: directory
-    owner: "9090"
-    group: "9090"
+    # owner: "9090"
+    # group: "9090"
     mode: "0777"
 
 - name: Verify prometheus config directory exists (on first swarm node)

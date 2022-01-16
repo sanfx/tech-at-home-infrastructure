@@ -7,7 +7,7 @@ services:
     networks:
       - {{traefik_network_name}}
     volumes:
-      - /home/{{ansible_user}}/stacks/frontends/dashy/conf.yml:/app/public/conf.yml:ro
+      - /mnt/etc/dashy/conf.yml:/app/public/conf.yml:Z
     ports:
       - 8081:80
     # Set any environmental variables
@@ -27,6 +27,30 @@ services:
       placement:
         constraints:
            - "node.role==manager"
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    hostname: "{{uptime_kuma_app_name}}"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /data/uptime_kuma:/app/data
+    ports:
+      - "3001:3001"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dashy-http.rule=Host(`{{uptime_kuma_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.routers.dashy-http.entrypoints={{traefik_network_name}}"
+        - "traefik.http.services.dashy-http.loadbalancer.server.port={{uptime_kuma_app_port}}"
+        - "traefik.http.services.dashy-http.loadbalancer.passhostheader=true"
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==worker"
 
 
 networks:

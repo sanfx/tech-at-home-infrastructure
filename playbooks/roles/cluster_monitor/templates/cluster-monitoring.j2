@@ -208,7 +208,7 @@ services:
         target: /etc/prometheus/swarm_task.rules.yml
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 0
       update_config:
         parallelism: 2
         delay: 10s
