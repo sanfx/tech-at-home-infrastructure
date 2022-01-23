@@ -108,13 +108,25 @@
     dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
   tags: ['lighttpd']
 
+- name: Check that the webproc executable exists
+  stat:
+    path: /usr/local/bin/webproc
+  register: webproc_stat_result
+
+- name: Check that the gzip executable exists
+  stat:
+    path: /usr/bin/gzip
+  register: gzip_stat_result
+
 - name: Install gunzip if it is absent
+  when: not gzip_stat_result.stat.exists
   tags: ["dns"]
   apt:
     name: gzip
     state: present
 
 - name: Download webproc_0.4.0_linux_amd64.gz
+  when: not webproc_stat_result.stat.exists
   tags: ["dns"]
   get_url:
     url: https://github.com/jpillora/webproc/releases/download/v0.4.0/webproc_0.4.0_linux_amd64.gz
@@ -122,6 +134,7 @@
     mode: '0777'
 
 - name: uncompress file.
+  when: not webproc_stat_result.stat.exists
   shell: gunzip /usr/local/bin/webproc.gz 
   tags: ["dns"]
 
@@ -131,7 +144,7 @@
 #     dest: /usr/local/bin
 #     remote_src: yes
 
-- name: DNSMasq Webprox Systemd Service file creation
+- name: DNSMasq Webproc Systemd Service file creation
   tags: ["dns"]
   copy:
     dest: /etc/systemd/system/webproc-dnsmasq.service

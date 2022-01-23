@@ -38,25 +38,6 @@ services:
       - "traefik.http.services.pihole-http-svc.loadbalancer.server.port={{pihole_web_port}}"
       - "traefik.http.services.pihole-http-svc.loadbalancer.passhostheader=true"
 
-  pihole_exporter:
-    image: ekofr/pihole-exporter:latest
-    hostname: pihole_exporter
-    restart: always
-    networks:
-      - {{traefik_network_name}}
-    command: "./pihole-exporter -pihole_hostname 192.168.1.152 -pihole_password {{pihole_web_password}}"
-    environment:
-      - "PIHOLE_PORT={{pihole_web_port}}"
-      - "PIHOLE_PASSWORD={{pihole_web_password}}"
-      - "PIHOLE_API_TOKEN={{pihole_api_token}}"
-      - "INTERVAL=30s"
-      - "PORT={{pihole_exporter_port}}"
-    ports:
-      - target: {{pihole_exporter_port}}
-        published: {{pihole_exporter_port}}
-        mode: host
-   
-
 volumes:
   dnsmasq:
 

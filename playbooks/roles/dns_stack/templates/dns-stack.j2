@@ -19,7 +19,7 @@ services:
       - {{traefik_network_name}}
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 0
       placement:
         constraints:
            - "node.hostname==swarm-master"
@@ -58,6 +58,33 @@ services:
       placement:
         constraints:
           - "node.role==worker"
+
+  pihole_exporter:
+    image: ekofr/pihole-exporter:latest
+    hostname: pihole_exporter
+    networks:
+      - {{traefik_network_name}}
+    command: "./pihole-exporter -pihole_hostname {{pihole_host_ip}} -pihole_password {{pihole_web_password}}"
+    environment:
+      - "PIHOLE_PORT: {{pihole_web_port}}"
+      - "PIHOLE_PASSWORD: {{pihole_web_password}}"
+      - "PIHOLE_API_TOKEN: {{pihole_api_token}}"
+      - "INTERVAL: 30s"
+      - "PORT: {{pihole_exporter_port}}"
+    ports:
+      - target: {{pihole_exporter_port}}
+        published: {{pihole_exporter_port}}
+        mode: host
+    deploy:
+      labels:
+        - "traefik.enable=false"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - "node.hostname==swarm-master"    
 
 networks:
   {{traefik_network_name}}:
