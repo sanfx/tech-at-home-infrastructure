@@ -12,8 +12,11 @@ ExecStart=/usr/local/bin/rclone mount  minio:nextcloud /mnt/nextcloud \
 --allow-other \
 --buffer-size 256M \
 --dir-cache-time 1000h \
+--uid 33 \
+--gid 33 \
+--dir-perms 0770 \
 --log-level DEBUG \
---log-file /var/log/rclone.log \
+--log-file /var/log/nextcloud-mount.log \
 --timeout 1h \
 --umask 002 \
 --rc-addr 0.0.0.0:5575 \

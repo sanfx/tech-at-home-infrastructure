@@ -5,6 +5,11 @@ services:
     image: nextcloud
     networks:
       - {{traefik_network_name}}
+    ports:
+      - target: 80
+        published: 8085
+        protocol: tcp
+        mode: host
     deploy:
       labels:
           # traefik common
