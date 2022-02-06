@@ -64,7 +64,7 @@ services:
     hostname: pihole_exporter
     networks:
       - {{traefik_network_name}}
-    command: "./pihole-exporter -pihole_hostname {{pihole_host_ip}} -pihole_password {{pihole_web_password}}"
+    command: "./pihole-exporter -pihole_hostname {{pihole_host_ip}} -pihole_port {{pihole_web_port}} -pihole_password {{pihole_web_password}}"
     environment:
       - "PIHOLE_PORT: {{pihole_web_port}}"
       - "PIHOLE_PASSWORD: {{pihole_web_password}}"

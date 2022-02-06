@@ -1,0 +1,28 @@
+[Unit]
+Description=RClone nextcloud-mount Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+Environment=RCLONE_CONFIG=/etc/rclone.conf
+KillMode=none
+RestartSec=5
+ExecStart=/usr/local/bin/rclone mount  minio:nextcloud /mnt/nextcloud \
+--allow-other \
+--buffer-size 256M \
+--dir-cache-time 1000h \
+--log-level DEBUG \
+--log-file /var/log/rclone.log \
+--timeout 1h \
+--umask 002 \
+--rc-addr 0.0.0.0:5575 \
+--rc \
+--vfs-read-chunk-size-limit=2048M \
+--vfs-read-chunk-size=64M \
+--vfs-cache-mode=full \
+--vfs-cache-max-size=150G \
+--vfs-cache-max-age=12h
+
+ExecStop=/bin/fusermount -uz /mnt/nextcloud 
+Restart=on-failure

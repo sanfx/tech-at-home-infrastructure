@@ -61,6 +61,7 @@
   tasks:
     # - block:
     - include_vars: "{{config_dir}}/config.yml"
+    - include_vars: "{{config_dir}}/nextcloud.yml"
     - import_role:
         name: traefik
     - import_role:
@@ -69,6 +70,8 @@
         name: dns_stack
     - import_role:
         name: web
+    - import_role:
+        name: nextcloud
       # rescue:
       #   - set_fact:
       #       role_failed: true

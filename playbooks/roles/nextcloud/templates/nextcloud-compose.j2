@@ -1,0 +1,136 @@
+version: "3.7"
+
+services:
+  nextcloud:
+    image: nextcloud
+    networks:
+      - {{traefik_network_name}}
+    deploy:
+      labels:
+          # traefik common
+          - "traefik.docker.network={{traefik_network_name}}"
+
+          # traefikv2
+          - "traefik.http.routers.nextcloud.rule=Host(`{{nextcloud_app_name}}.{{app_domain_name}}`)"
+          - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+          - "traefik.enable=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+    volumes:
+      - /mnt/nextcloud/data:/var/www/html/data
+      - /mnt/nextcloud/html:/var/www/html
+      - /mnt/nextcloud/apps:/var/www/html/custom_apps
+      - /mnt/nextcloud/config:/var/www/html/config
+
+  db:
+    image: mariadb:10.7.1-focal
+    networks:
+      - {{traefik_network_name}}
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed --init-file /data/application/init.sql
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+      - /home/{{ansible_user}}/stacks/nextcloud/init.sql:/data/application/init.sql
+      - /home/{{ansible_user}}/stacks/nextcloud/mariadb.cnf:/etc/mysql/mariadb.cnf
+    ports:
+      - target: 3306
+        published: 3306
+        protocol: tcp
+        mode: host
+    environment:
+      MARIADB_ROOT_USER: {{MYSQL_ROOT_USER}}
+      MARIADB_ROOT_PASSWORD: {{MYSQL_PWD}}
+      MYSQL_DATABASE: {{MYSQL_DATABASE}}
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+    
+
+  db-backup:
+    image: mariadb:10.7.1-focal
+    volumes:
+      - /var/data/nextcloud/database-dump:/dump
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - target: 3306
+        published: 6306
+        protocol: tcp
+        mode: host
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        mysqldump -h db --all-databases | gzip -c > /dump/dump_\`date +%d-%m-%Y"_"%H_%M_%S\`.sql.gz
+        (ls -t /dump/dump*.sql.gz|head -n {{BACKUP_NUM_KEEP}};ls /dump/dump*.sql.gz)|sort|uniq -u|xargs rm -- {}
+        sleep {{BACKUP_FREQUENCY}}
+      done
+      EOF'
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+    networks:
+      - {{traefik_network_name}}
+
+  redis:
+    image: redis:alpine
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role != manager"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /var/data/runtime/nextcloud/redis:/data
+
+  cron:
+    image: nextcloud
+    volumes:
+      - /mnt/nextcloud/html/:/var/www/html
+    user: www-data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+    networks:
+      - {{traefik_network_name}}
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+        trap "break;exit" SIGHUP SIGINT SIGTERM
+        while [ ! -f /var/www/html/config/config.php ]; do
+          sleep 1
+        done
+        while true; do
+          php -f /var/www/html/cron.php
+          sleep 15m
+        done
+      EOF'
+
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}
+

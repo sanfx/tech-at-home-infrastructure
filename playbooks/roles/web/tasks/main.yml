@@ -21,6 +21,7 @@
     state: directory
 
 - name: Copy dashy config {{ansible_hostname}}
+  tags: ["web"]
   when: inventory_hostname == groups['swarm_managers'][0]
   ansible.builtin.copy:
     src: ./config/conf.yml

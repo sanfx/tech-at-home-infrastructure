@@ -58,7 +58,13 @@
     name: zip
     state: present
 
+- name: Check that the rclone executable exists
+  stat:
+    path: /usr/local/bin/rclone
+  register: rclone_stat_result
+
 - name: Unarchive a file that is already on the remote machine
+  when: not rclone_stat_result.stat.exists
   tags: ["rclone"]
   ansible.builtin.unarchive:
     src: "https://downloads.rclone.org/{{rclone_version}}/rclone-{{rclone_version}}-{{ansible_system|lower}}-amd64.zip"
@@ -66,6 +72,7 @@
     remote_src: yes
 
 - name: Move rclone to /usr/local/bin
+  when: not rclone_stat_result.stat.exists
   tags: ["rclone"]
   command: mv /tmp/rclone-{{rclone_version}}-{{ansible_system | lower}}-amd64/rclone /usr/local/bin
 
@@ -73,6 +80,36 @@
   tags: ["rclone"]
   file:
     path: "/mnt/{{mount_location}}"
+    state: directory
+
+- name: Verify nextcloud mount location exists on {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: "/mnt/nextcloud"
+    state: directory
+
+- name: Verify nextcloud html location exists on {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: "/mnt/nextcloud/html"
+    state: directory
+
+- name: Verify nextcloud data location exists on {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: "/mnt/nextcloud/data"
+    state: directory
+
+- name: Verify nextcloud config location exists on {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: "/mnt/nextcloud/config"
+    state: directory
+
+- name: Verify nextcloud apps location exists on {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: "/mnt/nextcloud/apps"
     state: directory
 
 - name: Verify mount location data exists on {{ansible_hostname}}
@@ -119,6 +156,19 @@
     src: rclone-mount-data.j2
     dest: /etc/systemd/system/rclone-mount-data.service
 
+- name: Remove nextcloud mount service file.
+  tags: ["rclone", "nextcloud"]
+  file:
+    path: /etc/systemd/system/nextcloud-mount.service
+    state: absent
+  register: service_file
+
+- name: Create rclone systemd nextcloud mount service file on {{ansible_hostname}}.
+  tags: ["rclone", "nextcloud"]
+  template:
+    src: nextcloud-mount.j2
+    dest: /etc/systemd/system/nextcloud-mount.service
+
 - name: Force systemd to reload if necassary
   tags: ["rclone"]
   ansible.builtin.systemd:
@@ -139,17 +189,12 @@
     enabled: yes
     state: started
 
-# - name: Install rclone if it is absent
-#   tags: ["rclone"]
-#   apt:
-#     name: rclone
-#     state: present
-
-# - name: print result
-#   debug:
-#     msg:
-#       - "{{linux_revision['stdout_lines']}}"
-#       - linux_revision
+- name: Enable nextcloud-mount systemd service unit {{ansible_hostname}}
+  tags: ["rclone", "nextcloud"]
+  ansible.builtin.systemd:
+    name: nextcloud-mount.service
+    enabled: yes
+    state: started
 
 # - name: Wait for any possibly running unattended upgrade to finish
 #   # when: autoupdate.stat.exists
