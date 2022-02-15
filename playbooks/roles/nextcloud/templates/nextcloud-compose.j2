@@ -3,6 +3,7 @@ version: "3.7"
 services:
   nextcloud:
     image: nextcloud
+    user: "www-data:www-data"
     networks:
       - {{traefik_network_name}}
     ports:

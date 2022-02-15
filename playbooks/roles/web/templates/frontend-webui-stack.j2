@@ -35,8 +35,6 @@ services:
       - {{traefik_network_name}}
     volumes:
       - /data/uptime_kuma:/app/data
-    ports:
-      - "3001:3001"
     deploy:
       labels:
         - "traefik.enable=true"

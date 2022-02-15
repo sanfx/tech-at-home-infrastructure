@@ -83,7 +83,7 @@
     state: directory
 
 - name: Verify nextcloud mount location exists on {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   file:
     path: "/mnt/nextcloud"
     state: directory
@@ -95,19 +95,19 @@
     state: directory
 
 - name: Verify nextcloud data location exists on {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   file:
     path: "/mnt/nextcloud/data"
     state: directory
 
 - name: Verify nextcloud config location exists on {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   file:
     path: "/mnt/nextcloud/config"
     state: directory
 
 - name: Verify nextcloud apps location exists on {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   file:
     path: "/mnt/nextcloud/apps"
     state: directory
@@ -157,14 +157,14 @@
     dest: /etc/systemd/system/rclone-mount-data.service
 
 - name: Remove nextcloud mount service file.
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   file:
     path: /etc/systemd/system/nextcloud-mount.service
     state: absent
   register: service_file
 
 - name: Create rclone systemd nextcloud mount service file on {{ansible_hostname}}.
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   template:
     src: nextcloud-mount.j2
     dest: /etc/systemd/system/nextcloud-mount.service
@@ -190,7 +190,7 @@
     state: started
 
 - name: Enable nextcloud-mount systemd service unit {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
+  tags: ["rclone"]
   ansible.builtin.systemd:
     name: nextcloud-mount.service
     enabled: yes

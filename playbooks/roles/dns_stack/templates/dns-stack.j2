@@ -5,6 +5,52 @@ configs:
     file: /home/{{ansible_user}}/stacks/dnsmasq/config/dnsmasq.conf
 
 services:
+  adguardhome:
+    image: adguard/adguardhome
+    ports:
+      - target: 53
+        published: 53
+        mode: host
+        protocol: tcp
+      - target: 53
+        published: 53
+        mode: host
+        protocol: udp
+      - target: 67
+        published: 67
+        mode: host
+        protocol: udp
+      - target: 853
+        published: 853
+        mode: host
+        protocol: tcp
+      - target: 3000
+        published: 3002
+        mode: host
+        protocol: tcp
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - adguard_config:/opt/adguard/home/conf
+      - adguard_work:/opt/adguard/home/work
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.admin-adguard-http.rule=Host(`{{adguard_admin_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.routers.admin-adguard-http.entrypoints={{traefik_network_name}}"
+        - "traefik.http.routers.admin-adguard-http.service=admin-adguard-http-svc"
+        - "traefik.http.services.admin-adguard-http-svc.loadbalancer.server.port={{adguard_admin_web_port}}"
+
+        - "traefik.http.routers.adguard-http.rule=Host(`{{adguard_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.routers.adguard-http.entrypoints={{traefik_network_name}}"
+        - "traefik.http.routers.adguard-http.service=adguard-http-svc"
+        - "traefik.http.services.adguard-http-svc.loadbalancer.server.port={{adguard_web_port}}"
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+           - "node.hostname==swarm-master"
+    
   cloudflared:
     image: visibilityspots/cloudflared
     ports:
@@ -31,9 +77,9 @@ services:
         published: 53
         mode: host
         protocol: udp
-      - target: {{dnsmasq_web_port}}
-        published: 5380
-        mode: host
+#      - target: {{dnsmasq_web_port}}
+#        published: 5380
+#        mode: host
     networks:
       - {{traefik_network_name}}
     configs:
@@ -50,6 +96,7 @@ services:
         - "traefik.enable=true"
         - "traefik.http.routers.dnsmasq-http.rule=Host(`{{dnsmasq_app_name}}.{{app_domain_name}}`)"
         - "traefik.http.routers.dnsmasq-http.entrypoints={{traefik_network_name}}"
+        - "traefik.http.routers.dnsmasq-http.service=dnsmasq-http"
         - "traefik.http.services.dnsmasq-http.loadbalancer.server.port={{dnsmasq_web_port}}"
         - "traefik.http.services.dnsmasq-http.loadbalancer.passhostheader=true"
         - "traefik.http.services.dnsmasq-http.loadbalancer.healthcheck.scheme={{dnsmasq_web_protocol}}"
@@ -64,11 +111,10 @@ services:
     hostname: pihole_exporter
     networks:
       - {{traefik_network_name}}
-    command: "./pihole-exporter -pihole_hostname {{pihole_host_ip}} -pihole_port {{pihole_web_port}} -pihole_password {{pihole_web_password}}"
+    command: "./pihole-exporter -pihole_hostname 192.168.1.46 -pihole_port 80 -pihole_password {{pihole_web_password}}"
     environment:
       - "PIHOLE_PORT: {{pihole_web_port}}"
       - "PIHOLE_PASSWORD: {{pihole_web_password}}"
-      - "PIHOLE_API_TOKEN: {{pihole_api_token}}"
       - "INTERVAL: 30s"
       - "PORT: {{pihole_exporter_port}}"
     ports:
@@ -94,4 +140,6 @@ networks:
 volumes:
   pihole:
   dnsmasq:
+  adguard_config:
+  adguard_work:
 
