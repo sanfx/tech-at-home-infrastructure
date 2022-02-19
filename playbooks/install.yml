@@ -65,6 +65,8 @@
     - import_role:
         name: traefik
     - import_role:
+        name: backups
+    - import_role:
         name: cluster_monitor
     - import_role:
         name: dns_stack

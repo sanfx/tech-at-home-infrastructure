@@ -1,0 +1,9 @@
+# ./diun.yml
+
+watch:
+  workers: 20
+  schedule: "0 */6 * * *"
+
+providers:
+  docker:
+    watchStopped: true

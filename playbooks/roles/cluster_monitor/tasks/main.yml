@@ -1,8 +1,8 @@
 ---
-- name: Verify stacks directory exists (on first swarm node)
+- name: Verify stacks/cluster_monitoring directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   file:
-    path: "/home/{{ansible_user}}/stacks"
+    path: "/home/{{ansible_user}}/stacks/cluster_monitoring"
     state: directory
 
 - name: Verify prometheus directory exists (on first swarm node)
@@ -10,24 +10,6 @@
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus"
     state: directory
-
-# - name: Ensure group "9090" exists
-#   tags: ["monitor"]
-#   ignore_errors: true
-#   group:
-#     name: "9090"
-#     state: present
-
-# - name: Add user "9090" 
-#   tags: ["monitor"]
-#   ignore_errors: true
-#   user:
-#     name: "9090"
-#     groups: wheel
-#     shell: /sbin/nologin
-#     append: yes
-#     comment: "9090 nologin User"
-#     state: present
 
 - name: Verify prometheus directory exists (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
@@ -46,7 +28,7 @@
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: cluster-monitoring.j2
-    dest: /home/{{ansible_user}}/stacks/cluster-monitoring-stack.yml
+    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/cluster-monitoring-stack.yml
     mode: 0775
 
 - name: Copy Prometheus rules with owner and permissions
@@ -54,6 +36,15 @@
   ansible.builtin.copy:
     src: ./rules
     dest: /home/{{ansible_user}}/stacks/prometheus
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Copy diun configuration with owner and permissions
+  when: inventory_hostname == groups['swarm_managers'][0]
+  ansible.builtin.copy:
+    src: ./diun
+    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/
     owner: "{{ansible_user}}"
     group: "{{ansible_user}}"
     mode: '0644'
@@ -70,5 +61,5 @@
     state: present
     name: cluster_monitoring
     compose:
-      - /home/{{ansible_user}}/stacks/cluster-monitoring-stack.yml
+      - /home/{{ansible_user}}/stacks/cluster_monitoring/cluster-monitoring-stack.yml
   tags: ["monitor"]
