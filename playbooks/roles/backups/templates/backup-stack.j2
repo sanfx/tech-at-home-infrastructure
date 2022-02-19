@@ -2,23 +2,23 @@ version: "3.7"
 services:
   duplicati:
     image: lscr.io/linuxserver/duplicati
-    container_name: duplicati
     environment:
       - PUID=0
       - PGID=0
       - TZ=Europe/London
     volumes:
-      - /mnt/etc/duplicati/config:/config
+      - /data/duplicati/config:/config
       - /data/duplicati/backups:/backups
       - /home/{{ansible_user}}/:/source
     ports:
       - 8270:8200
     deploy:
       labels:
-          - "traefik.docker.network={{traefik_network_name}}"
-          - "traefik.http.routers.duplicati.rule=Host(`{{duplicati_app_name}}.{{app_domain_name}}`)"
-          - "traefik.http.services.duplicati.loadbalancer.server.port={{duplicati_web_port}}"
-          - "traefik.enable=true"
+        - "diun.enable=true"
+        - "traefik.docker.network={{traefik_network_name}}"
+        - "traefik.http.routers.duplicati.rule=Host(`{{duplicati_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.services.duplicati.loadbalancer.server.port={{duplicati_web_port}}"
+        - "traefik.enable=true"
       mode: replicated
       replicas: 1
       restart_policy:
