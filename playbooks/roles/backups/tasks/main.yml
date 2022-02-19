@@ -1,0 +1,38 @@
+---
+- name: Verify duplicati config directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["duplicati"]
+  file:
+    path: "/mnt/etc/duplicati/config"
+    state: directory
+
+- name: Verify duplicati backups directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["duplicati"]
+  file:
+    path: "/data/duplicati/backups"
+    state: directory
+
+- name: Verify duplicati backups directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["duplicati"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/backups"
+    state: directory
+
+- name: Create docker-compose stack file for backups(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["duplicati"]
+  template:
+    src: backup-stack.j2
+    dest: /home/{{ansible_user}}/stacks/backups/backup-stack.yml
+    mode: 0775
+
+- name: Deploy backups stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: backups
+    compose:
+      - /home/{{ansible_user}}/stacks/backups/backup-stack.yml
+  tags: ["duplicati"]
