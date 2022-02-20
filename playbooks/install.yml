@@ -24,6 +24,13 @@
         - set_fact:
             role_failed: true
 
+  handlers:
+    - name: restart systemd-resolved
+      service:
+        name: systemd-resolved
+        state: restarted
+      when: reboot_required.stat.exists == false
+
 - hosts: swarm_managers
   vars_files:
     - "{{playbook_dir}}/vars.yml"

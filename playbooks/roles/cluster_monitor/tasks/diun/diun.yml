@@ -7,3 +7,11 @@ watch:
 providers:
   docker:
     watchStopped: true
+
+notif:
+  telegram:
+    token: 5145110330:AAGHMhthvUVIcsqXZeF34FCzj3z2arTzTYY
+    chatIDs:
+      - 869747957
+    templateBody: |
+      Docker tag {{ .Entry.Image }} which you subscribed to through {{ .Entry.Provider }} provider has been released.
