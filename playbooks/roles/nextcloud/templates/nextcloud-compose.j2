@@ -13,6 +13,7 @@ services:
         mode: host
     deploy:
       labels:
+          - "diun.enable=true"
           # traefik common
           - "traefik.docker.network={{traefik_network_name}}"
 
@@ -28,18 +29,19 @@ services:
         constraints:
            - "node.role==manager"
     volumes:
-      - /mnt/nextcloud/data:/var/www/html/data
-      - /mnt/nextcloud/html:/var/www/html
-      - /mnt/nextcloud/apps:/var/www/html/custom_apps
-      - /mnt/nextcloud/config:/var/www/html/config
+      - /nextcloud/data:/var/www/html/data
+      - /nextcloud/html:/var/www/html
+      - /nextcloud/apps:/var/www/html/custom_apps
+      - /nextcloud/config:/var/www/html/config
 
   db:
     image: mariadb:10.7.1-focal
+    user: "mysql:mysql" 
     networks:
       - {{traefik_network_name}}
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed --init-file /data/application/init.sql
     volumes:
-      - /var/lib/mysql:/var/lib/mysql
+      - mysql:/var/lib/mysql
       - /home/{{ansible_user}}/stacks/nextcloud/init.sql:/data/application/init.sql
       - /home/{{ansible_user}}/stacks/nextcloud/mariadb.cnf:/etc/mysql/mariadb.cnf
     ports:
@@ -52,6 +54,8 @@ services:
       MARIADB_ROOT_PASSWORD: {{MYSQL_PWD}}
       MYSQL_DATABASE: {{MYSQL_DATABASE}}
     deploy:
+      labels:
+        - "diun.enable=true"
       mode: replicated
       replicas: 1
       restart_policy:
@@ -59,12 +63,11 @@ services:
       placement:
         constraints:
            - "node.role==manager"
-    
 
   db-backup:
     image: mariadb:10.7.1-focal
     volumes:
-      - /var/data/nextcloud/database-dump:/dump
+      - /vagrant/data/nextcloud/database-dump:/dump
       - /etc/localtime:/etc/localtime:ro
     ports:
       - target: 3306
@@ -83,7 +86,7 @@ services:
       EOF'
     deploy:
       mode: replicated
-      replicas: 0
+      replicas: 1
       restart_policy:
         condition: on-failure
       placement:
@@ -95,6 +98,8 @@ services:
   redis:
     image: redis:alpine
     deploy:
+      labels:
+        - "diun.enable=true"
       mode: replicated
       replicas: 0
       restart_policy:
@@ -105,12 +110,12 @@ services:
     networks:
       - {{traefik_network_name}}
     volumes:
-      - /var/data/runtime/nextcloud/redis:/data
+      - /vagrant/data/nextcloud/redis:/data
 
   cron:
     image: nextcloud
     volumes:
-      - /mnt/nextcloud/html/:/var/www/html
+      - /nextcloud/html/:/var/www/html
     user: www-data
     deploy:
       mode: replicated
@@ -140,3 +145,5 @@ networks:
     external: true
     name: {{traefik_network_name}}
 
+volumes:
+    mysql: {}
