@@ -7,9 +7,7 @@ networks:
 
 volumes:
     prometheus: {}
-    grafana: {}
     alertmanager: {}
-    {{minio_volume_name}}: {}
 
 configs:
   prometheus_config:
@@ -28,6 +26,8 @@ services:
     environment:
       - DOCKER_GWBRIDGE_IP=172.18.0.1
     deploy:
+      labels:
+        - "diun.enable=true"
       replicas: 0
       restart_policy:
         condition: on-failure
@@ -49,6 +49,8 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     deploy:
+      labels:
+        - "diun.enable=true"
       replicas: 1
       update_config:
         parallelism: 2
@@ -72,7 +74,7 @@ services:
       - "GF_USERS_ALLOW_SIGN_UP={{GF_USERS_ALLOW_SIGN_UP}}"
       - "GF_PATHS_LOGS: /var/log/grafana"
       - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel"
-      #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-localhost}
+      #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-}
       #- GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
       #- GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS:-grafana@test.com}
       #- GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME:-Grafana}
@@ -80,12 +82,12 @@ services:
       #- GF_SMTP_USER=${GF_SMTP_USER}
       #- GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
     volumes:
-      - grafana:/var/lib/grafana
-      - {{minio_volume_name}}:/mnt
+      - /vagrant/data/grafana/data:/var/lib/grafana
     ports:
       - "{{grafana_listen_port}}:{{grafana_listen_port}}"
     deploy:
       labels:
+        - "diun.enable=true"
         - "traefik.enable=true"
         - "traefik.http.routers.grafana.rule=Host(`{{grafana_app_name}}.{{app_domain_name}}`)"
         - "traefik.http.middlewares.do-compress.compress=true"
@@ -123,6 +125,8 @@ services:
     volumes:
       - alertmanager:/alertmanager
     deploy:
+      labels:
+        - "diun.enable=true"
       mode: replicated
       replicas: 0
       update_config:
@@ -147,6 +151,7 @@ services:
       - "ALERTMANAGER_URIS=default:http://alertmanager:9093"
     deploy:
       labels:
+        - "diun.enable=true"
         - "traefik.enable=true"
         - "traefik.http.routers.unsee.rule=Host(`{{unsee_app_name}}.{{app_domain_name}}`)"
         - "traefik.http.services.unsee.loadbalancer.server.port={{unsee_listen_port}}"
@@ -178,6 +183,8 @@ services:
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
       - '--no-collector.ipvs'
     deploy:
+      labels:
+        - "diun.enable=true"
       mode: global
       resources:
         limits:
@@ -203,6 +210,13 @@ services:
       driver: "json-file"
     user: "root:root"
     deploy:
+      labels:
+        - "diun.enable=true"
+        - "traefik.enable=true"
+        - "traefik.http.routers.unsee.rule=Host(`{{prometheus_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.services.unsee.loadbalancer.server.port={{prometheus_web_port}}"
+        - "traefik.http.routers.unsee.entrypoints={{traefik_network_name}}"
+        - "traefik.docker.network={{traefik_network_name}}"
       mode: replicated
       replicas: 1
       update_config:
@@ -219,11 +233,23 @@ services:
     container_name: diun
     command: serve
     volumes:
-      - "/data/diun:/data"
+      - "/vagrant/data/diun:/data"
       - "/home/{{ansible_user}}/stacks/cluster_monitoring/diun/diun.yml:/diun.yml:ro"
       - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
-      - "TZ=Europe/Paris"
+      - "TZ=Europe/London"
       - "LOG_LEVEL=info"
       - "LOG_JSON=false"
-    restart: always
+    deploy:
+      labels:
+        - "diun.enable=true"
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
