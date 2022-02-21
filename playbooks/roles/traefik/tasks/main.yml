@@ -3,8 +3,28 @@
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["traefik"]
   file:
-    path: "/home/{{ansible_user}}/stacks"
+    path: "/home/{{ansible_user}}/stacks/traefik/"
     state: directory
+
+- name: Copy traefik static with owner and permissions
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["traefik"]
+  ansible.builtin.copy:
+    src: ./static
+    dest: /home/{{ansible_user}}/stacks/traefik/
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Copy traefik static with owner and permissions
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["traefik"]
+  ansible.builtin.copy:
+    src: ./config
+    dest: /home/{{ansible_user}}/stacks/traefik/
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
 
 - name: Generate admin password hash
   when: inventory_hostname == groups['swarm_managers'][0]
