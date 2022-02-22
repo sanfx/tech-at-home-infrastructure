@@ -40,20 +40,17 @@
     group: "{{ansible_user}}"
     mode: '0644'
 
-- name: Copy diun configuration with owner and permissions
-  when: inventory_hostname == groups['swarm_managers'][0]
-  ansible.builtin.copy:
-    src: ./diun
-    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/
-    owner: "{{ansible_user}}"
-    group: "{{ansible_user}}"
-    mode: '0644'
-
 - name: Create prometheus config file for cluster monitor(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: prometheus-config.j2
     dest: /etc/prometheus/prometheus.yml
+
+- name: Create diun yaml config file for cluster monitor(on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: diun.j2
+    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/diun.yml
 
 - name: Deploy cluster monitoring stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
