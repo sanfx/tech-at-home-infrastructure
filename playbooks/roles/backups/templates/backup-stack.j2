@@ -10,6 +10,9 @@ services:
       - /data/duplicati/config:/config
       - /data/duplicati/backups:/backups
       - /home/{{ansible_user}}/:/source
+      - /var/lib/docker/volumes:/docker_volumes
+    networks:
+      - {{traefik_network_name}}
     ports:
       - 8270:8200
     deploy:
@@ -26,3 +29,8 @@ services:
       placement:
         constraints:
            - "node.role==manager"
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}
