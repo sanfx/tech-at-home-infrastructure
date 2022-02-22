@@ -240,6 +240,8 @@ services:
       - "TZ=Europe/London"
       - "LOG_LEVEL=info"
       - "LOG_JSON=false"
+    networks:
+      - {{traefik_network_name}}
     deploy:
       labels:
         - "diun.enable=true"
