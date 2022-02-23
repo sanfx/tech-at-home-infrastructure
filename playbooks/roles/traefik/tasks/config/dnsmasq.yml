@@ -1,0 +1,14 @@
+# As YAML Configuration File
+http:
+  routers:
+    router1:
+      entrypoints:
+        - "web"
+      service: dnsmasq-service
+      rule: "Host(`dnsmasq.home.local`)"
+
+  services:
+    dnsmasq-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.152:8085"

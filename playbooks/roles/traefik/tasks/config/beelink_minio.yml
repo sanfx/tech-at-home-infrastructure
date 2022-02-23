@@ -1,0 +1,14 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-beelink-minio:
+      entrypoints:
+        - "web"
+      service: beelink-minio-service
+      rule: "Host(`beelink.minio.home.local`)"
+
+  services:
+    beelink-minio-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.32:9000"

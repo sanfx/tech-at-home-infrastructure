@@ -1,0 +1,14 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-jenkins:
+      entrypoints:
+        - "web"
+      service: jenkins-service
+      rule: "Host(`jenkins.home.local`)"
+
+  services:
+    jenkins-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.11:8080"
