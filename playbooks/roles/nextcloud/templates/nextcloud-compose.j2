@@ -6,11 +6,6 @@ services:
     user: "www-data:www-data"
     networks:
       - {{traefik_network_name}}
-    ports:
-      - target: 80
-        published: 8085
-        protocol: tcp
-        mode: host
     deploy:
       labels:
           - "diun.enable=true"
@@ -29,8 +24,8 @@ services:
         constraints:
            - "node.role==manager"
     volumes:
-      - /nextcloud/data:/var/www/html/data
       - /nextcloud/html:/var/www/html
+      - /nextcloud/data:/var/www/html/data
       - /nextcloud/apps:/var/www/html/custom_apps
       - /nextcloud/config:/var/www/html/config
 

@@ -32,12 +32,27 @@
   tags: ["traefik"]
   register: traefikpassword
 
+- name: install docker compose 
+  tags: ["traefik"]   
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.27.3/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 755
+
+- name: Create docker-socker-compose stack file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["traefik"]
+  template:
+    src: docker-socket-compose.j2
+    dest: /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
+    mode: 0775
+
 - name: Create docker-compose stack file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["traefik"]
   template:
     src: traefik-stack.j2
-    dest: /home/{{ansible_user}}/stacks/traefik-stack.yml
+    dest: /home/{{ansible_user}}/stacks/traefik/traefik-stack.yml
     mode: 0775
 
 - name: Install jsondiff Python library
@@ -68,6 +83,35 @@
   become_method: sudo
   ignore_errors: true
 
+- name: Service file creation
+  tags: ["traefik"]
+  copy:
+    dest: /etc/systemd/system/docker-compose.service
+    content: |
+      [Unit]
+      Description=Docker Socket Compose Service
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/home/{{ansible_user}}/stacks/traefik/
+      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+      ExecStop=/usr/local/bin/docker-compose down
+      [Install]
+      WantedBy=multi-user.target
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
+- name: Systemd service activation
+  tags: ["traefik"]
+  ansible.builtin.systemd:
+    name: docker-compose.service
+    enabled: yes
+    state: started
+
 - name: Deploy stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["traefik"]
@@ -77,4 +121,4 @@
     state: present
     name: traefik
     compose:
-      - /home/{{ansible_user}}/stacks/traefik-stack.yml
+      - /home/{{ansible_user}}/stacks/traefik/traefik-stack.yml

@@ -1,17 +1,20 @@
 ---
 - name: Verify stacks/cluster_monitoring directory exists (on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   file:
     path: "/home/{{ansible_user}}/stacks/cluster_monitoring"
     state: directory
 
 - name: Verify prometheus directory exists (on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus"
     state: directory
 
 - name: Verify prometheus directory exists (on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   file:
     path: "/home/{{ansible_user}}/stacks/prometheus/data"
@@ -19,12 +22,14 @@
     mode: "0777"
 
 - name: Verify prometheus config directory exists (on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   file:
     path: "/etc/prometheus"
     state: directory
 
 - name: Create docker-compose stack file for cluster monitor(on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: cluster-monitoring.j2
@@ -32,6 +37,7 @@
     mode: 0775
 
 - name: Copy Prometheus rules with owner and permissions
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   ansible.builtin.copy:
     src: ./rules
@@ -41,12 +47,14 @@
     mode: '0644'
 
 - name: Create prometheus config file for cluster monitor(on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: prometheus-config.j2
     dest: /etc/prometheus/prometheus.yml
 
 - name: Create diun yaml config file for cluster monitor(on first swarm node)
+  tags: ["monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: diun.j2

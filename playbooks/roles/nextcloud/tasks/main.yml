@@ -7,6 +7,14 @@
     path: "/home/{{ansible_user}}/stacks"
     state: directory
 
+- name: Add www-data users to vagrant group
+  user:
+    name: www-data
+    groups: vagrant
+    append: yes
+    state: present
+    createhome: yes
+
 - name: Verify nextcloud directory exists. (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["nextcloud"]

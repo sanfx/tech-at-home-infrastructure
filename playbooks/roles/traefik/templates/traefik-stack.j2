@@ -1,8 +1,8 @@
-version: '3.5'
+version: '3.7'
 
 services:
   reverse-proxy:
-    image: traefik:v2.5.4
+    image: traefik:2.6
     hostname: "{{traefik_app_name}}"
     command:
       - "--api.dashboard=true"
@@ -17,25 +17,35 @@ services:
     ports:
       - "{{traefik_listen_port}}:{{traefik_listen_port}}"
       - "{{traefik_admin_port}}:8080"
+    environment:
+      DOCKER_HOST: dockersocket
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/log/traefik.log:/var/log/traefik.log
       - /var/log/access.log:/var/log/access.log
+      - /home/{{ansible_user}}/stacks/traefik/static/traefik.yml:/traefik.yml
+      - /home/{{ansible_user}}/stacks/traefik/config:/config/
     networks:
       - {{traefik_network_name}}
     deploy:
       labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`{{traefik_app_name}}.{{app_domain_name}}`)"
-      - "traefik.http.routers.api.service=api@internal"
-      # - "traefik.http.routers.api.middlewares=auth"
-      # - "traefik.http.middlewares.auth.basicauth.users={{traefikpassword.stdout}}"
-      # Dummy service for Swarm port detection. The port can be any valid integer value.
-      - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+          - "diun.enable=true"
+          - "traefik.enable=true"
+          - "traefik.http.routers.api.rule=Host(`{{traefik_app_name}}.{{app_domain_name}}`)"
+          - "traefik.http.routers.api.service=api@internal"
+          # - "traefik.http.routers.api.middlewares=auth"
+          # - "traefik.http.middlewares.auth.basicauth.users={{traefikpassword.stdout}}"
+          # Dummy service for Swarm port detection. The port can be any valid integer value.
+          - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
       mode: global
       placement:
         constraints: [node.role == manager]
+
+networks:
+  proxy:
+    driver: bridge
+    external: true
 
 networks:
   {{traefik_network_name}}:

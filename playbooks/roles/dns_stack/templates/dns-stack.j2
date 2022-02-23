@@ -9,11 +9,11 @@ services:
     image: adguard/adguardhome
     ports:
       - target: 53
-        published: 53
+        published: 5300
         mode: host
         protocol: tcp
       - target: 53
-        published: 53
+        published: 5300
         mode: host
         protocol: udp
       - target: 67
@@ -31,10 +31,11 @@ services:
     networks:
       - {{traefik_network_name}}
     volumes:
-      - adguard_config:/opt/adguard/home/conf
-      - adguard_work:/opt/adguard/home/work
+      - adguard_config:/opt/adguardhome/conf
+      - adguard_work:/opt/adguardhome/work
     deploy:
       labels:
+        - "diun.enable=true"
         - "traefik.enable=true"
         - "traefik.http.routers.admin-adguard-http.rule=Host(`{{adguard_admin_app_name}}.{{app_domain_name}}`)"
         - "traefik.http.routers.admin-adguard-http.entrypoints={{traefik_network_name}}"
@@ -64,6 +65,8 @@ services:
     networks:
       - {{traefik_network_name}}
     deploy:
+      labels:
+        - "diun.enable=true"
       mode: replicated
       replicas: 0
       placement:
@@ -72,14 +75,6 @@ services:
 
   dnsmasq:
     image: jpillora/dnsmasq:latest
-    ports:
-      - target: 53
-        published: 53
-        mode: host
-        protocol: udp
-#      - target: {{dnsmasq_web_port}}
-#        published: 5380
-#        mode: host
     networks:
       - {{traefik_network_name}}
     configs:
@@ -93,6 +88,7 @@ services:
         max-size: "100m"
     deploy:
       labels:
+        - "diun.enable=true"
         - "traefik.enable=true"
         - "traefik.http.routers.dnsmasq-http.rule=Host(`{{dnsmasq_app_name}}.{{app_domain_name}}`)"
         - "traefik.http.routers.dnsmasq-http.entrypoints={{traefik_network_name}}"
@@ -111,7 +107,7 @@ services:
     hostname: pihole_exporter
     networks:
       - {{traefik_network_name}}
-    command: "./pihole-exporter -pihole_hostname 192.168.1.46 -pihole_port 80 -pihole_password {{pihole_web_password}}"
+    command: "./pihole-exporter -pihole_hostname {{pihole_host_ip}} -pihole_port {{pihole_web_port}} -pihole_password {{pihole_web_password}}"
     environment:
       - "PIHOLE_PORT: {{pihole_web_port}}"
       - "PIHOLE_PASSWORD: {{pihole_web_password}}"
@@ -123,6 +119,7 @@ services:
         mode: host
     deploy:
       labels:
+        - "diun.enable=true"
         - "traefik.enable=false"
       mode: replicated
       replicas: 1

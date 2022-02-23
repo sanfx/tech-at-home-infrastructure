@@ -14,6 +14,15 @@
     path: /etc/apt/apt.conf.d/20auto-upgrades
     state: absent
 
+- name: Disable the systemd-resolve stub DNS resolver (replaced by unbound)..
+  lineinfile:
+    dest: /etc/systemd/resolved.conf
+    regexp: '^#DNSStubListener='
+    line: 'DNSStubListener=no'
+    state: present
+  notify:
+    - restart systemd-resolved
+
 - name: Register the system release
   tags: ["rclone"]
   raw: uname -r
@@ -24,6 +33,7 @@
 
 - name: Update nameserver in /etc/resolv.conf
   lineinfile:
+    state: present
     path: /etc/resolv.conf
     line: 'nameserver 1.1.1.1'
     insertbefore: BOF
@@ -35,6 +45,17 @@
     state: latest
     force_apt_get: true
     update_cache: yes
+
+- name: Remove old packages from the cache
+  tags: ["apt"]
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer needed
+  tags: ["apt"]
+  apt:
+    autoremove: yes
+    purge: yes
 
 - name: Install jsondiff Python library
   pip:
@@ -80,36 +101,6 @@
   tags: ["rclone"]
   file:
     path: "/mnt/{{mount_location}}"
-    state: directory
-
-- name: Verify nextcloud mount location exists on {{ansible_hostname}}
-  tags: ["rclone"]
-  file:
-    path: "/mnt/nextcloud"
-    state: directory
-
-- name: Verify nextcloud html location exists on {{ansible_hostname}}
-  tags: ["rclone", "nextcloud"]
-  file:
-    path: "/mnt/nextcloud/html"
-    state: directory
-
-- name: Verify nextcloud data location exists on {{ansible_hostname}}
-  tags: ["rclone"]
-  file:
-    path: "/mnt/nextcloud/data"
-    state: directory
-
-- name: Verify nextcloud config location exists on {{ansible_hostname}}
-  tags: ["rclone"]
-  file:
-    path: "/mnt/nextcloud/config"
-    state: directory
-
-- name: Verify nextcloud apps location exists on {{ansible_hostname}}
-  tags: ["rclone"]
-  file:
-    path: "/mnt/nextcloud/apps"
     state: directory
 
 - name: Verify mount location data exists on {{ansible_hostname}}
@@ -217,6 +208,5 @@
 #   become: false
 #   ignore_errors: true
 #   when: autoupdate.stat.exists and inventory_hostname != "127.0.0.1" and inventory_hostname != "localhost"
-
 
 

@@ -6,22 +6,24 @@
     path: "/home/{{ansible_user}}/stacks"
     state: directory
 
-- name: Verify pihole directory exists (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["pihole"]
-  file:
-    path: "/home/{{ansible_user}}/stacks/pihole"
-    state: directory
-
 - name: Verify dns directory exists (on first swarm node)
-  when: inventory_hostname != groups['swarm_managers'][0]
+  when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["dns"]
   file:
     path: "/home/{{ansible_user}}/stacks/dns"
     state: directory
 
+
+- name: Verify dnsmasq/config directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["dns"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/dnsmasq/config/"
+    state: directory
+
+
 - name: Copy Prometheus rules with owner and permissions
-  when: inventory_hostname != groups['swarm_managers'][0]
+  when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["dns"]
   ansible.builtin.copy:
     src: ./config
@@ -35,48 +37,37 @@
     path: "/home/{{ansible_user}}/stacks/pihole/exporter"
     state: directory
 
-- name: Ensure group "pihole" exists
-  tags: ["pihole"]
-  group:
-    name: pihole
+- name: Install dnsmasq if it is absent
+  tags: ["dns"]
+  apt:
+    name: dnsmasq
     state: present
 
-- name: Add user "pihole"  
-  tags: ["pihole"]
-  user:
-    name: pihole
-    groups: pihole
-    shell: /sbin/nologin
-    append: yes
-    comment: "Pihole nologin User"
-    state: present
-
-- name: Verify /etc/pihole directory exists (on first swarm node)
+- name: Systemd dnsmasq service de-activation
   when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["pihole"]
-  file:
-    path: "/etc/pihole"
-    state: directory
-    owner: "pihole"
-    group: "pihole"
+  tags: ["dns"]
+  systemd:
+    name: dnsmasq.service
+    enabled: no
+    state: stopped
+
+- name: Create records.txt file for DNS (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["dns"]
+  template:
+    src: records.j2
+    dest: /home/{{ansible_user}}/stacks/dnsmasq/config/records.txt
     mode: 0775
-
-- name: Verify lighttpd directory exists (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["pihole"]
-  file:
-    path: "/home/{{ansible_user}}/stacks/lighttpd"
-    state: directory
 
 - name: Create docker-compose stack file for DNS and DOH(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["dns"]
   template:
     src: dns-stack.j2
-    dest: /home/{{ansible_user}}/stacks/dns/dns-doh-stack.yml
+    dest: /home/{{ansible_user}}/stacks/dns/dns-stack.yml
     mode: 0775
 
-- name: Systemd resolved service activation
+- name: Systemd resolved service de-activation
   when: inventory_hostname != groups['swarm_managers'][0]
   tags: ["dns"]
   systemd:
@@ -84,14 +75,14 @@
     enabled: no
     state: stopped
 
-- name: Deploy DNSMasq and DOH stack from a compose file (on first swarm node)
+- name: Deploy DNS stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["dns"]
   docker_stack:
     state: present
-    name: dns_doh
+    name: dns
     compose:
-      - /home/{{ansible_user}}/stacks/dns/dns-doh-stack.yml
+      - /home/{{ansible_user}}/stacks/dns/dns-stack.yml
 
 - name: Create docker-compose file for Pihole(on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
@@ -133,18 +124,12 @@
     dest: /usr/local/bin/webproc.gz
     mode: '0777'
 
-- name: uncompress file.
+- name: uncompressing webproc file.
   when: not webproc_stat_result.stat.exists
   shell: gunzip /usr/local/bin/webproc.gz 
   tags: ["dns"]
 
-# - name: Unarchive a file that needs to be downloaded (added in 2.0)
-#   ansible.builtin.unarchive:
-#     src: https://github.com/jpillora/webproc/releases/download/v0.4.0/webproc_0.4.0_linux_amd64.gz
-#     dest: /usr/local/bin
-#     remote_src: yes
-
-- name: DNSMasq Webproc Systemd Service file creation
+- name: Webproc DNSMasq Systemd Service file creation
   tags: ["dns"]
   copy:
     dest: /etc/systemd/system/webproc-dnsmasq.service
@@ -159,7 +144,7 @@
       RemainAfterExit=true
       Restart=on-failure
       WorkingDirectory=/home/{{ansible_user}}/stacks/dnsmasq/
-      ExecStart=webproc -p {{dnsmasq_web_port}} -u {{DNSMASQ_HTTP_USER}} --pass {{DNSMASQ_HTTP_PASS}}  -c config/dnsmasq.conf  -- dnsmasq --no-daemon
+      ExecStart=webproc -p {{dnsmasq_web_port}} -u {{DNSMASQ_HTTP_USER}} --pass {{DNSMASQ_HTTP_PASS}}  -- dnsmasq -C config/dnsmasq.conf -q -H config/records.txt --no-daemon
       RestartSec=5
       KillMode=process
       KillSignal=SIGINT
@@ -184,7 +169,7 @@
   #     [Install]
   #     WantedBy=multi-user.target
 
-- name: DNSMasq Webprox Systemd service activation
+- name: DNSMasq Webproc Systemd service activation
   tags: ["dns"]
   systemd:
     name: webproc-dnsmasq.service
