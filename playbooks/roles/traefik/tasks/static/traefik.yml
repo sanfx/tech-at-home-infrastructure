@@ -1,0 +1,56 @@
+global:
+  # Send anonymous usage data
+  sendAnonymousUsage: true
+
+metrics:
+  prometheus:
+    addServicesLabels: true
+    addRoutersLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+
+accessLog:
+  filePath: "/var/log/access.log"
+  format: json
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "200"
+      - "300-302"
+    retryAttempts: true
+    minDuration: "10ms"
+
+log:
+  filePath: "/var/log/traefik.log"
+  format: json
+  level: ERROR
+
+entryPoints:
+  traefik:
+    address: ":8080"
+  web:
+    address: ":80"
+
+api:
+  insecure: true
+  dashboard: true
+
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  file:
+    directory: "/config/"
+    watch: true
+  consulCatalog:
+    defaultRule: "Host(`{{ .Name }}.home.local`)"
+    endpoint:
+      address: http://192.168.1.40:8500
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    swarmMode: true
+    exposedByDefault: false
+
