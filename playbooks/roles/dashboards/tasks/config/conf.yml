@@ -1,0 +1,195 @@
+---
+appConfig:
+  theme: material-dark
+  layout: auto
+  iconSize: medium
+  language: en
+  customColors:
+    nord:
+      primary: '#d8dee9'
+      background: '#3b4252'
+      background-darker: '#2e3440'
+    material:
+      primary: '#363636'
+      background: '#985ceb'
+      background-darker: '#afeb5c'
+  customCss: |+
+
+
+pageInfo:
+  title: Dashy
+  description: Welcome to your new dashboard!
+  navLinks:
+    - title: GitHub
+      path: https://github.com/sanfx
+    - title: Nextcloud
+      path: https://devilsan.com/nextcloud
+    - title: Gitlab
+      path: https://gitlab.com
+  footerText: ''
+sections:
+  - name: HomeLab
+    icon: fas fa-rocket
+    items:
+      - title: Jenkins
+        description: Jenkins Master on Rockpi
+        icon: http://192.168.1.10:8080/static/cc71ad76/favicon.ico
+        url: http://192.168.1.10:8080
+        target: newtab
+        id: 0_664_jenkins
+      - title: Consul
+        description: Hashicorp COnsul Service Mesh
+        url: https://consul.access.devilsan.com
+        icon: far fa-hands-helping
+        id: 1_664_consul
+      - title: Pihole
+        description: Pihole on Raspberry Pi
+        icon: >-
+          https://styles.redditmedia.com/t5_39spl/styles/communityIcon_ghekadqkc5j31.png?width=256&s=7aa947e8562b7e7212c71367e3211f2967ebdee1
+        url: http://pihole.home.local/admin
+        target: newtab
+        id: 2_664_pihole
+      - title: Nextcloud
+        description: Nextcloud on rockpix
+        icon: https://192.168.1.11/nextcloud/core/img/favicon.ico
+        url: https://192.168.1.11/nextcloud/
+        target: newtab
+        hotkey: 9
+        id: 3_664_nextcloud
+      - title: New Nextcloud
+        description: 2nd Nextcloud Instance
+        icon: http://nextcloud.home.local/core/img/favicon.ico
+        url: http://nextcloud.home.local
+        target: newtab
+        hotkey: 2
+        id: 4_664_newnextcloud
+      - title: Adguard Home
+        description: Network wide Adblocker
+        icon: http://adguard.home.local/assets/favicon.png
+        url: http://adguard.home.local
+        target: newtab
+        hotkey: 1
+        id: 5_664_adguardhome
+  - name: Getting Started
+    icon: fas fa-rocket
+    items:
+      - title: Dashy Live
+        description: Development a project management links for Dashy
+        icon: https://i.ibb.co/qWWpD0v/astro-dab-128.png
+        url: https://live.dashy.to/
+        target: newtab
+        id: 0_1481_dashylive
+      - title: GitHub
+        description: Source Code, Issues and Pull Requests
+        url: https://github.com/lissy93/dashy
+        icon: favicon
+        id: 1_1481_github
+      - title: Docs
+        description: Configuring & Usage Documentation
+        provider: Dashy.to
+        icon: far fa-book
+        url: https://dashy.to/docs
+        id: 2_1481_docs
+      - title: Showcase
+        description: See how others are using Dashy
+        url: https://github.com/Lissy93/dashy/blob/master/docs/showcase.md
+        icon: far fa-grin-hearts
+        id: 3_1481_showcase
+      - title: Config Guide
+        description: See full list of configuration options
+        url: https://github.com/Lissy93/dashy/blob/master/docs/configuring.md
+        icon: fas fa-wrench
+        id: 4_1481_configguide
+      - title: Support
+        description: Get help with Dashy, raise a bug, or get in contact
+        url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
+        icon: far fa-hands-helping
+        id: 5_1481_support
+  - name: Monitoring
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - title: Grafana
+        description: Shows Graphs to Monitor Homelab
+        icon: http://grafana.home.local/public/img/grafana_icon.svg
+        url: http://grafana.home.local/
+        target: newtab
+        id: 0_1062_grafana
+      - title: Uptime Kuma
+        description: Uptime Status
+        icon: http://uptime.home.local/icon.svg
+        url: http://uptime.home.local/dashboard
+        target: newtab
+        id: 1_1062_uptimekuma
+      - title: Prometheus
+        icon: >-
+          http://prometheus.home.local/static/img/favicon.ico?v=67dc912ac8b24f94a1fc478f352d25179c94ab9b
+        url: http://prometheus.home.local
+        target: newtab
+        id: 2_1062_prometheus
+      - title: Traefik
+        description: Reverse Proxy
+        icon: http://traefik.home.local/dashboard/statics/app-logo-128x128.png
+        url: http://traefik.home.local
+        target: newtab
+        id: 3_1062_traefik
+  - name: Data Sync & Management
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - title: Minio S3 Storage
+        description: Minio S3 Storage on Windows 10 Beelink Mini PC
+        icon: >-
+          https://styles.redditmedia.com/t5_3ahsh/styles/communityIcon_8zvt7t9p8cg41.jpg?width=256&format=pjpg&s=db7e75ff443a8f7dc8deb4ae32e8dfcdb50bc680
+        url: http://192.168.1.32:9000
+        target: newtab
+        id: 0_1946_miniosstorage
+      - title: Syncthing
+        description: Syncthing on Rockpi
+        provider: Syncthing
+        icon: far fa-book
+        url: https://192.168.1.10:45860
+        id: 1_1946_syncthing
+      - title: Syncthing
+        description: Syncthing on Rockpix
+        url: https://192.168.1.11:45860
+        icon: far fa-grin-hearts
+        id: 2_1946_syncthing
+      - title: Duplicati
+        description: backaup data
+        icon: http://duplicati.home.local/img/logo.png
+        url: http://duplicati.home.local
+        target: newtab
+        id: 3_1946_duplicati
+      - title: Minio S3 @ Rockpix
+        description: Minio S3 at Rockpix node
+        icon: >-
+          https://styles.redditmedia.com/t5_3ahsh/styles/communityIcon_8zvt7t9p8cg41.jpg?width=256&format=pjpg&s=db7e75ff443a8f7dc8deb4ae32e8dfcdb50bc680
+        url: http://192.168.1.11:9000
+        target: newtab
+        id: 4_1946_miniosrockpix
+  - name: www
+    icon: >-
+      https://cdn.iconscout.com/icon/premium/png-256-thumb/world-wide-web-3-763138.png
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - title: 1.1.1.1/help
+        description: Check DNS
+        url: https://1.1.1.1/help
+        target: newtab
+        tags:
+          - dns
+        id: 0_357_help
