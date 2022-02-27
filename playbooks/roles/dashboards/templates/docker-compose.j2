@@ -1,0 +1,96 @@
+version: "3.7"
+
+services:
+  homer:
+    image: b4bz/homer:22.02.1
+    hostname: "homer"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /data/homer/assets:/www/assets
+    ports:
+      - 8095:8080
+    # Set any environmental variables
+    environment:
+      DOCKER_HOST: dockersocket
+    deploy:
+      labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.homer-http.rule=Host(`homer.{{app_domain_name}}`)"
+          - "traefik.http.routers.homer-http.entrypoints={{traefik_network_name}}"
+          - "traefik.http.routers.homer-http.service=homer-http-svc"
+          - "traefik.http.services.homer-http-svc.loadbalancer.server.port=8080"
+          - "traefik.http.services.homer-http-svc.loadbalancer.passhostheader=true"
+          - "diun.enable=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+
+  homer-sd:
+    image: ghcr.io/calvinbui/homer-service-discovery
+    hostname: "homer-sd"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /data/homer/assets/config.yml:/config.yml
+      - /data/homer/sd/base.yml:/base.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      labels:
+          - "diun.enable=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+
+  dashy:
+    image: lissy93/dashy
+    hostname: "{{dashboard_app_name}}"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /vagrant/data/{{dashboard_app_name}}/conf.yml:/app/public/conf.yml:Z
+    ports:
+      - 8081:80
+    # Set any environmental variables
+    environment:
+      - NODE_ENV=production
+    deploy:
+      labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.dashy-http.rule=Host(`{{dashboard_app_name}}.{{app_domain_name}}`)"
+          - "traefik.http.routers.dashy-http.entrypoints={{traefik_network_name}}"
+          - "traefik.http.routers.dashy-http.service=dashy-http-svc"
+          - "traefik.http.services.dashy-http-svc.loadbalancer.server.port={{dashy_web_port}}"
+          - "traefik.http.services.dashy-http-svc.loadbalancer.passhostheader=true"
+          - "diun.enable=true"
+          # Homer Service discovery label
+          - "homer.enable=true"
+          - "homer.service=Homelab"
+          - "homer.name=Dashy"
+          - "homer.subtitle='Dashy dashboard'"
+          - "homer.icon='far fa-hand-peace'"
+          - "homer.priority=1"
+          - "homer.url='http://{{dashboard_app_name}}.{{app_domain_name}}'"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
+  
+
+
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}
