@@ -17,7 +17,6 @@ configs:
   task_rules:
     file: /home/{{ansible_user}}/stacks/prometheus/rules/swarm_task.rules.yml
 
-
 services:
   dockerd-exporter:
     image:  stefanprodan/dockerd-exporter:latest
@@ -255,3 +254,27 @@ services:
       placement:
         constraints:
           - node.role == manager
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    hostname: "{{uptime_kuma_app_name}}"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /vagrant/data/uptime_kuma:/app/data
+    deploy:
+      labels:
+          - "diun.enable=true"
+          - "traefik.enable=true"
+          - "traefik.http.routers.uptime_kuma-http.rule=Host(`{{uptime_kuma_app_name}}.{{app_domain_name}}`)"
+          - "traefik.http.routers.uptime_kuma-http.entrypoints={{traefik_network_name}}"
+          - "traefik.http.routers.uptime_kuma-http.service=uptime_kuma-http-svc"
+          - "traefik.http.services.uptime_kuma-http-svc.loadbalancer.server.port={{uptime_kuma_app_port}}"
+          - "traefik.http.services.uptime_kuma-http-svc.loadbalancer.passhostheader=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+           - "node.role==manager"
