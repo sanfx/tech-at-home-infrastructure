@@ -53,7 +53,6 @@
 
 - name: Create records.txt file for DNS (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["dns"]
   template:
     src: records.j2
     dest: /home/{{ansible_user}}/stacks/dnsmasq/config/records.txt
