@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  logrotate:
+    image: blacklabelops/logrotate
+    hostname: "blacklabelops_logrotate"
+    environment:
+      - "LOGS_DIRECTORIES: /var/lib/docker/containers /var/log/docker /var/log/ /nextcloud/data"
+      - "LOGROTATE_INTERVAL=hourly"
+      - "LOGROTATE_COPIES=10"
+      - "LOGROTATE_STATUSFILE=/logrotate-status/logrotate.status"
+      - "LOGROTATE_CRONSCHEDULE=*/2 * * * * *"
+      #- "LOGROTATE_OLDDIR=/logs"
+      - "LOGROTATE_LOGFILE=/logs/logrotatecron.log"
+      - "LOGROTATE_SIZE=10M"
+      - "TZ=Europe/London"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - /vagrant/logs:/logs
+      - /var/log:/var/log
+      - /home/{{ansible_user}}/stacks/cluster_manage/logging/traefik:/etc/logrotate.d/traefik
+    networks:
+      - {{traefik_network_name}}
+    deploy:
+      labels:
+        - "diun.enable=true"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+    name: {{traefik_network_name}}

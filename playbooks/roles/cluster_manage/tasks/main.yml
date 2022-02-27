@@ -1,0 +1,47 @@
+---
+- name: Verify stacks directory exists. (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  tags: ["logrotate"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/cluster_manage/logging"
+    state: directory
+
+- name: Create docker-compose stack file for cluster manage stack(on first swarm node)
+  tags: ["logrotate"]
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: cluster_manage_compose.j2
+    dest: /home/{{ansible_user}}/stacks/cluster_manage/cluster_manage_compose.yml
+    mode: 0775
+
+
+- name: Create traefik logrotate config file for cluster manage stack(on first swarm node)
+  tags: ["logrotate"]
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: traefik.j2
+    dest: /home/{{ansible_user}}/stacks/cluster_manage/logging/traefik
+    mode: 0775
+
+
+- name: Install logrotate if it is absent
+  tags: ["logrotate"]
+  apt:
+    name: logrotate
+    state: present
+
+- name: Enable logrotate systemd service unit {{ansible_hostname}}
+  tags: ["logrotate"]
+  ansible.builtin.systemd:
+    name: logrotate.service
+    enabled: yes
+    state: started
+
+# - name: Deploy cluster management stack from a compose file (on first swarm node)
+#   when: inventory_hostname == groups['swarm_managers'][0]
+#   docker_stack:
+#     state: present
+#     name: cluster_manage
+#     compose:
+#       - /home/{{ansible_user}}/stacks/cluster_manage/cluster_manage_compose.yml
+#   tags: ["logrotate"]
