@@ -21,7 +21,7 @@ services:
       DOCKER_HOST: dockersocket
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log/traefik.log:/var/log/traefik.log
       - /var/log/access.log:/var/log/access.log
       - /home/{{ansible_user}}/stacks/traefik/static/traefik.yml:/traefik.yml
@@ -38,6 +38,14 @@ services:
           # - "traefik.http.middlewares.auth.basicauth.users={{traefikpassword.stdout}}"
           # Dummy service for Swarm port detection. The port can be any valid integer value.
           - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+          # Homer Service discovery label
+          - "homer.enable=true"
+          - "homer.service=Homelab"
+          - "homer.name={{traefik_app_name}}"
+          - "homer.subtitle='{{traefik_app_name}} Reverse Proxy'"
+          - "homer.icon='far fa-hand-peace'"
+          - "homer.priority=2"
+          - "homer.url='http://{{traefik_app_name}}.{{app_domain_name}}'"
       mode: global
       placement:
         constraints: [node.role == manager]
