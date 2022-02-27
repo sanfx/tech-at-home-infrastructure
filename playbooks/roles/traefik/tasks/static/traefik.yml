@@ -23,6 +23,9 @@ accessLog:
     retryAttempts: true
     minDuration: "10ms"
 
+pilot:
+    token: "30e6734b-dd82-4db8-acd0-f6293067cb80"
+
 log:
   filePath: "/var/log/traefik.log"
   format: json
