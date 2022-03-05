@@ -1,13 +1,13 @@
 ---
 - name: Verify stacks directory exists (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   file:
     path: "/home/{{ansible_user}}/stacks/traefik/"
     state: directory
 
 - name: Copy traefik static with owner and permissions
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   ansible.builtin.copy:
     src: ./static
@@ -17,7 +17,7 @@
     mode: '0644'
 
 - name: Copy traefik static with owner and permissions
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   ansible.builtin.copy:
     src: ./config
@@ -27,7 +27,7 @@
     mode: '0644'
 
 - name: Generate admin password hash
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
   tags: ["traefik"]
   register: traefikpassword
@@ -40,7 +40,7 @@
     mode: 755
 
 - name: Create docker-socker-compose stack file (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   template:
     src: docker-socket-compose.j2
@@ -48,7 +48,7 @@
     mode: 0775
 
 - name: Create docker-compose stack file (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   template:
     src: traefik-stack.j2
@@ -56,7 +56,7 @@
     mode: 0775
 
 - name: Install jsondiff Python library
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   become: true
   become_method: sudo
   tags: ["pip"]
@@ -64,7 +64,7 @@
     name: jsondiff
 
 - name: Install pyyaml Python library
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   become: true
   become_method: sudo
   tags: ["pip"]
@@ -113,7 +113,7 @@
     state: started
 
 - name: Deploy stack from a compose file (on first swarm node)
-  when: inventory_hostname == groups['swarm_managers'][0]
+
   tags: ["traefik"]
   become: true
   become_method: sudo
