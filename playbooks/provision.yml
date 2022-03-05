@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
-  docker_compose_version: 1.25.0
   become: yes
   become_method: sudo
+
   tasks:
   - name: Make sure we have a 'wheel' group
     group:
@@ -33,84 +33,66 @@
       state=present
       createhome=yes
 
+  - name: Make sure we have a 'mysql' group
+    group:
+      name: mysql
+      gid: 132
+      state: present
+
+  - name: Add mysql user and group
+    user:
+      name: mysql
+      group: mysql
+      uid: 132
+      state: present
+      createhome: no
+
   - name: Set up authorized keys for the ansible user
     authorized_key: user=ansible key="{{item}}"
     with_file:
       - ./.ssh/id_rsa.pub
 
-  - name: Upgrade all packages to the latest version
-    become: true
-    become_method: sudo
-    tags: ["apt"]
-    apt:
-      name: "*"
-      state: latest
-      force_apt_get: true
-      update_cache: yes
-
-  - name: Verify system dependencies
-    become: true
-    become_method: sudo
-    apt:
-      pkg:
-        - apt-transport-https
-        - ca-certificates
-        - curl
-        - gnupg-agent
-        - software-properties-common
-        - python3-pip
-        - apache2-utils
+  - name: Disable the systemd-resolve stub DNS resolver (replaced by unbound)..
+    lineinfile:
+      dest: /etc/systemd/resolved.conf
+      regexp: '^#DNSStubListener='
+      line: 'DNSStubListener=no'
       state: present
-      force_apt_get: true
-      update_cache: yes
-    tags: ["apt"]
-    until: result is not failed
-    retries: 20
-    delay: 30
+    notify:
+      - restart systemd-resolved
+  
+  - name: Remove symlink /etc/resolv.conf
+    file:
+      path: "/etc/resolv.conf"
+      state: absent
 
-  - name: Install Docker GPG key
-    become: true
-    become_method: sudo
-    shell: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
-    tags: ["docker"]
+  - name: Touch resolv.conf file, but do not change times this makes the task idempotent
+    ansible.builtin.file:
+      path: /etc/resolv.conf
+      state: touch
+      mode: u+rw,g-wx,o-rwx
+      modification_time: preserve
+      access_time: preserve
 
-  - name: install docker
-    apt:
-      name: "{{item}}"
-      state: latest
-      force_apt_get: true
-      update_cache: yes
-    loop:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
+  - name: Update nameserver in /etc/resolv.conf
+    lineinfile:
+      path: /etc/resolv.conf
+      state: present
+      line: 'nameserver 1.1.1.1'
+      insertbefore: BOF
 
-  - name: Check current docker-compose version.
-    command: docker-compose --version
-    register: docker_compose_vsn
-    changed_when: false
-    failed_when: false
-    check_mode: no
+  - name: finding python version
+    shell: python3 --version
+    register: pv
 
-  - set_fact:
-      docker_compose_current_version: "{{ docker_compose_vsn.stdout | regex_search('(\\d+(\\.\\d+)+)') }}"
-    when:
-      - docker_compose_vsn.stdout is defined
+  - name: print result
+    debug:
+      msg:
+        - "{{pv}}"
 
-  - name: Install or upgrade docker-compose
-    get_url: 
-      url : "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
-      dest: /usr/local/bin/docker-compose
-      mode: 'a+x'
-      force: yes
-    when: >
-      docker_compose_current_version is not defined
-      or docker_compose_current_version is version(docker_compose_version, '<')
-
-  - name: Add "{{ansible_user}}" user to "docker" group
-    become: true
-    become_method: sudo
-    shell: "adduser {{ansible_user}} docker"
-    tags: ["docker"]
-    
- 
+  - name: Systemd dnsmasq service de-activation
+    tags: ["dns"]
+    systemd:
+      name: dnsmasq.service
+      enabled: no
+      state: stopped
