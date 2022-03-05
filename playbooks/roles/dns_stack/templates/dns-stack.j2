@@ -28,6 +28,10 @@ services:
         published: 3002
         mode: host
         protocol: tcp
+      - target: {{adguard_web_port}}
+        published: 8002
+        mode: host
+        protocol: tcp
     networks:
       - {{traefik_network_name}}
     volumes:
@@ -50,7 +54,7 @@ services:
       replicas: 1
       placement:
         constraints:
-           - "node.hostname==swarm-master"
+           - "node.role==manager"
     
   cloudflared:
     image: visibilityspots/cloudflared
@@ -127,7 +131,7 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - "node.hostname==swarm-master"    
+          - "node.role==manager"    
 
 networks:
   {{traefik_network_name}}:
