@@ -11,4 +11,5 @@ http:
     dnsmasq-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.1.152:8085"
+          - url: "http://192.168.1.200:8085"
+          - url: "http://192.168.1.201:8085"
