@@ -1,4 +1,17 @@
 ---
+- name: Update Docker
+  become: true
+  become_method: sudo
+  ignore_errors: yes
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: latest
+    force_apt_get: true
+    update_cache: yes
+
 - name: Install Docker Python library
   pip:
     name: docker
