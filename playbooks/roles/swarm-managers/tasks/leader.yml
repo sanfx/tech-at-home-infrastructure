@@ -44,3 +44,25 @@
   when: inventory_hostname == groups['swarm_managers'][0]
   shell: docker swarm join-token --quiet worker
   register: worker_token
+
+- name: Install Docker Python library
+  pip:
+    name: docker
+    version: 5.0.3
+    state: present
+  tags: ["docker", pip]
+
+- name: Install jsondiff Python library
+  tags: ["pip"]
+  pip:
+    name: jsondiff
+
+- name: Create an overlay network
+  tags: ["docker"]
+  when: inventory_hostname == groups['swarm_managers'][0]
+  shell: docker network create -d overlay  --attachable "{{traefik_network_name}}"
+  register: swarm_worker_status
+  become: yes
+  ignore_errors: true
+
+
