@@ -46,6 +46,35 @@
         - set_fact:
             role_failed: true
 
+
+- hosts: swarm_managers
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    # - block:
+    - include_vars: "{{config_dir}}/config.yml"
+    - include_vars: "{{config_dir}}/nextcloud.yml"
+    - import_role:
+        name: swarm-managers
+    - import_role:
+        name: dns_stack
+    - import_role:
+        name: dashboards
+    - import_role:
+        name: cluster_manage
+    - import_role:
+        name: traefik
+    - import_role:
+        name: backups
+    - import_role:
+        name: cluster_monitor
+    - import_role:
+        name: nextcloud
+      # rescue:
+      #   - set_fact:
+      #       role_failed: true
+
 - hosts: swarm_workers
   vars_files:
     - "{{playbook_dir}}/vars.yml"
@@ -60,32 +89,6 @@
       rescue:
         - set_fact:
             role_failed: true
-
-- hosts: swarm_managers
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
-  become: yes
-  tasks:
-    # - block:
-    - include_vars: "{{config_dir}}/config.yml"
-    - include_vars: "{{config_dir}}/nextcloud.yml"
-    - import_role:
-        name: dashboards
-    - import_role:
-        name: cluster_manage
-    - import_role:
-        name: traefik
-    - import_role:
-        name: backups
-    - import_role:
-        name: cluster_monitor
-    - import_role:
-        name: dns_stack
-    - import_role:
-        name: nextcloud
-      # rescue:
-      #   - set_fact:
-      #       role_failed: true
 
 - hosts: localhost
   gather_facts: false
