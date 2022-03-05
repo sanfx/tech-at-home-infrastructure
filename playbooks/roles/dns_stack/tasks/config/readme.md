@@ -1,4 +1,4 @@
-## How DNSMasq works
+## How DNSMasq forward dns server selection works
 
 It seems the preferred server is determined by the first query to the server after startup, and then the other servers are not tried again until there is a failure of the preferred server. Full explanation from : https://lists.thekelleys.org.uk/pipermail/dnsmasq-discuss/2009q3/003295.html
 
