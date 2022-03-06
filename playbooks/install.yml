@@ -18,8 +18,11 @@
   tasks:
     - block:
         - include_vars: "{{config_dir}}/config.yml"
+        - include_vars: "{{config_dir}}/nextcloud.yml"
         - import_role:
-            name: host-defaults        
+            name: host-defaults
+        - import_role:
+            name: nextcloud
       rescue:
         - set_fact:
             role_failed: true
@@ -54,7 +57,6 @@
   tasks:
     # - block:
     - include_vars: "{{config_dir}}/config.yml"
-    - include_vars: "{{config_dir}}/nextcloud.yml"
     - import_role:
         name: swarm-managers
     - import_role:
@@ -69,8 +71,7 @@
         name: backups
     - import_role:
         name: cluster_monitor
-    - import_role:
-        name: nextcloud
+
       # rescue:
       #   - set_fact:
       #       role_failed: true
