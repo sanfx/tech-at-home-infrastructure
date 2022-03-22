@@ -1,11 +1,10 @@
 ---
 # https://geek-cookbook.funkypenguin.co.nz/recipes/nextcloud/
-- name: Verify stacks directory exists. (on first swarm node)
-  when: inventory_hostname == groups['swarm_workers'][0]
-  tags: ["nextcloud"]
-  file:
-    path: "/home/{{ansible_user}}/stacks"
-    state: directory
+
+- name: print result
+  debug:
+    msg:
+      - "{{inventory_hostname}}-{{groups['swarm_workers'][0]}}"
 
 - name: Add www-data users to vagrant group
   user:
@@ -15,23 +14,20 @@
     state: present
     createhome: yes
 
-- name: Verify nextcloud directory exists. (on first swarm node)
-  when: inventory_hostname == groups['swarm_workers'][0]
+- name: Verify nextcloud directory exists. (on all swarm nodes)
   tags: ["nextcloud"]
   file:
     path: "/home/{{ansible_user}}/stacks/nextcloud"
     state: directory
 
 - name: Copy mariadb.cnf to nextcloud folder with owner and permissions
-  when: inventory_hostname == groups['swarm_workers'][0]
   tags: ["db"]
   ansible.builtin.copy:
     src: ./config/mariadb.cnf
     dest: /home/{{ansible_user}}/stacks/nextcloud/mariadb.cnf
     mode: '0644'
 
-- name: Create init.sql file for Nextcloud DB setup (on first swarm node)
-  when: inventory_hostname == groups['swarm_workers'][0]
+- name: Create init.sql file for Nextcloud DB setup (on first swarm worker node)
   tags: ["nextcloud"]
   template:
     src: init.sql.j2
@@ -39,7 +35,7 @@
     mode: 0775
 
 - name: Create docker-compose stack file for Nextcloud stack (on first swarm node)
-  when: inventory_hostname == groups['swarm_workers'][0]
+  when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["nextcloud"]
   template:
     src: nextcloud-compose.j2
@@ -47,7 +43,7 @@
     mode: 0775
 
 - name: Deploy Nextcloud stack from a compose file (on first swarm node)
-  when: inventory_hostname == groups['swarm_workers'][0]
+  when: inventory_hostname == groups['swarm_managers'][0]
   tags: ["nextcloud", "docker-compose"]
   docker_stack:
     state: present
