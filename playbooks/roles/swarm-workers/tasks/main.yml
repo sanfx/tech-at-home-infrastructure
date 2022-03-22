@@ -34,4 +34,9 @@
   become: yes
   ignore_errors: false
 
-
+- name: Systemd dnsmasq service de-activation
+  tags: ["dns"]
+  ansible.builtin.systemd:
+    name: dnsmasq.service
+    enabled: no
+    state: stopped
