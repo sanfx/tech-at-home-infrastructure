@@ -1,5 +1,6 @@
 ---
 - name: Update Docker
+  tags: ["docker"]
   become: true
   become_method: sudo
   ignore_errors: yes
