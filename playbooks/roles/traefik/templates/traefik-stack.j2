@@ -49,9 +49,5 @@ services:
         constraints: [node.role == manager]
 
 networks:
-  proxy:
-    driver: bridge
-    external: true
-
-networks:
   {{traefik_network_name}}:
+    external: true
