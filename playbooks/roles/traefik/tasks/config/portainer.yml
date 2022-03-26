@@ -1,0 +1,14 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-portainer:
+      entrypoints:
+        - "web"
+      service: portainer-manager-service
+      rule: "Host(`portainer.home.local`)"
+
+  services:
+    portainer-manager-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.77:9000"
