@@ -66,11 +66,11 @@
     - import_role:
         name: cluster_manage
     - import_role:
-        name: traefik
-    - import_role:
         name: backups
     - import_role:
         name: cluster_monitor
+    - import_role:
+        name: traefik
 
       # rescue:
       #   - set_fact:
