@@ -1,0 +1,30 @@
+(global) {
+    errors
+    cache 86400 {
+      prefetch 5 10m 10%
+    }
+    loadbalance
+    prometheus :9153
+  }
+
+home.local:53 {
+  errors
+  file /root/zones/traefik
+}
+
+.:53 {
+    import global
+    hosts  {
+            192.168.1.11 devilsan.com
+            reload 1s
+            fallthrough
+           }
+    forward . tls://9.9.9.9 tls://149.112.112.112 {
+    tls_servername dns.quad9.net
+    health_check 10s
+    except home.local
+   }
+
+    loop
+    reload       
+}

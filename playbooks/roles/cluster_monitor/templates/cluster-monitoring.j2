@@ -199,8 +199,8 @@ services:
       - {{traefik_network_name}}
     volumes:
       - "/home/{{ansible_user}}/stacks/prometheus/data:/prometheus:rw"
-      - /etc/prometheus/:/etc/prometheus/:ro
       - /etc/localtime:/etc/localtime:ro
+      - /etc/prometheus:/etc/prometheus:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -225,7 +225,7 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - node.role == manager
+          - "node.role==manager"
 
   diun:
     image: crazymax/diun:latest
@@ -253,7 +253,7 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - node.role == manager
+          - "node.role==manager"
 
   uptime-kuma:
     image: louislam/uptime-kuma:1

@@ -3,12 +3,30 @@ http:
   routers:
     router-pihole:
       entrypoints:
-        - "web"
+        - "https"
       service: pihole-service
-      rule: "Host(`pihole.home.local`)"
+      rule: "Host(`pihole.access.devilsan.com`)"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: pihole.access.devilsan.com
 
+      #   stores:
+      #     default:
+      #       defaultCertificate:
+      #         certFile: /certs/server.crt
+      #         keyFile:  /certs/server.key
+        # certificates:
+        #   - certFile: /certs/server.crt
+        #     keyFile: /certs/server.key
+  
   services:
     pihole-service:
       loadBalancer:
         servers:
           - url: "http://192.168.1.46:80"
+        passHostHeader: true

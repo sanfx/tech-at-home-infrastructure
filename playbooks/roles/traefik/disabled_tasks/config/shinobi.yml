@@ -1,0 +1,14 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-shinobi:
+      entrypoints:
+        - "web"
+      service: shinobi-service
+      rule: "Host(`shinobi.home.local`)"
+
+  services:
+    shinobi-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.81:8082"

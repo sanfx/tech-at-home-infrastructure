@@ -14,14 +14,14 @@
     path: /etc/apt/apt.conf.d/20auto-upgrades
     state: absent
 
-- name: Disable the systemd-resolve stub DNS resolver (replaced by unbound)..
-  lineinfile:
-    dest: /etc/systemd/resolved.conf
-    regexp: '^#DNSStubListener='
-    line: 'DNSStubListener=no'
-    state: present
-  notify:
-    - restart systemd-resolved
+# - name: Disable the systemd-resolve stub DNS resolver (replaced by unbound)..
+#   lineinfile:
+#     dest: /etc/systemd/resolved.conf
+#     regexp: '^#DNSStubListener='
+#     line: 'DNSStubListener=no'
+#     state: present
+#   notify:
+#     - restart systemd-resolved
 
 - name: Register the system release
   tags: ["rclone"]
@@ -37,14 +37,6 @@
     path: /etc/resolv.conf
     line: 'nameserver 1.1.1.1'
     insertbefore: BOF
-
-- name: Upgrade all packages to the latest version
-  tags: ["apt"]
-  apt:
-    name: "*"
-    state: latest
-    force_apt_get: true
-    update_cache: yes
 
 - name: Remove old packages from the cache
   tags: ["apt"]
@@ -138,7 +130,7 @@
   tags: ["rclone"]
   file:
     path: /etc/systemd/system/rclone-mount-data.service
-    state: absent
+    state: abseForce systemd to reloadnt
   register: service_file
 
 - name: Create rclone systemd rclone service file on {{ansible_hostname}}.
@@ -160,11 +152,11 @@
     src: nextcloud-mount.j2
     dest: /etc/systemd/system/nextcloud-mount.service
 
-- name: Force systemd to reload if necassary
-  tags: ["rclone"]
-  ansible.builtin.systemd:
-    daemon_reload: yes
-  when: service_file.changed
+# - name: Force systemd to reload if necassary
+#   tags: ["rclone"]
+#   ansible.builtin.systemd:
+#     daemon_reload: yes
+#   when: service_file.changed
 
 - name: Enable rclone-mount.service systemd unit {{ansible_hostname}}
   tags: ["rclone"]

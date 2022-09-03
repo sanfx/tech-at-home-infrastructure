@@ -1,0 +1,23 @@
+$ORIGIN home.local.
+@    3600   IN      SOA     ns.home.local. root.home.local. (
+                              5         ; serial
+                         604800         ; refresh
+                          86400         ; retry
+                        2419232         ; expire
+                          36000         ; minimum
+              )
+
+; Name Server Information
+_etcd-server-ssl._tcp.test1.home.local. IN SRV 10 10 2380 test1-etcd-0.home.local.
+traefik     IN      A    192.168.1.232
+dashy       IN      A    192.168.1.232
+uptime      IN      A    192.168.1.232
+consul      IN      A    192.168.1.232
+nextcloud   IN      A    192.168.1.232
+grafana     IN      A    192.168.1.232
+portainer   IN      A    192.168.1.232
+admin-adguard IN    A    192.168.1.232
+adguard     IN      A    192.168.1.232
+prometheus  IN      A    192.168.1.232
+shinobi     IN      A    192.168.1.232
+omv         IN      A    192.168.1.232

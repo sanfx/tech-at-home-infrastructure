@@ -1,11 +1,11 @@
 # As YAML Configuration File
 http:
   routers:
-    router-jenkins:
+    router-grafana:
       entrypoints:
         - "https"
-      service: jenkins-service
-      rule: "Host(`jenkins.access.devilsan.com`)"
+      service: grafana-service
+      rule: "Host(`grafana.access.devilsan.com`)"
       middlewares:
         - hsts
         - redirect
@@ -13,14 +13,14 @@ http:
       tls:
         certResolver: linodev4
         domains:
-          - main: jenkins.access.devilsan.com
+          - main: grafana.access.devilsan.com
 
   services:
-    jenkins-service:
+    grafana-service:
       loadBalancer:
         healthCheck:
           interval: "5s"
           timeout: "3s"
         servers:
-          - url: "http://192.168.1.10:8080"
+          - url: "http://192.168.1.10:3000"
         passHostHeader: true

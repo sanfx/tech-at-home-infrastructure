@@ -1,23 +1,54 @@
 version: '3'
 
 services:
-  dockersocket:
-    container_name: dockersocket
-    image: tecnativa/docker-socket-proxy
+  reverse-proxy:
+    image: traefik:2.8.3
+    hostname: "{{traefik_app_name}}"
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - LINODE_TOKEN=96b26ae5f02cd961dba2e885ee5fd29d152e83b722c19251b86ab09fbca87f69
+    labels:
+      - "diun.enable: true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`{{traefik_app_name}}.{{app_domain_name}}`)"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+      - "traefik.http.routers.api.entrypoints=web"
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker"
+      - "--providers.docker.swarmMode=false"
+      - "--entrypoints.web.address=:{{traefik_listen_port}}"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker.network={{traefik_network_name}}"
+      - "--log.level=DEBUG"
+      - "--log.filePath=/var/log/traefik.log"
+      - "--accessLog.filePath=/var/log/access.log"
+    ports:
+      - target: 443
+        published: 443
+        mode: host
+      - target: {{traefik_listen_port}}
+        published: {{traefik_listen_port}}
+        mode: host
+      - target: {{traefik_admin_port}}
+        published: {{traefik_admin_port}}
+        mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/{{ansible_user}}/stacks/traefik/:/letsencrypt
+      - /var/log/traefik.log:/var/log/traefik.log
+      - /var/log/access.log:/var/log/access.log
+      - /home/{{ansible_user}}/stacks/traefik/static/traefik.yml:/traefik.yml
+      - /home/{{ansible_user}}/stacks/traefik/config:/config/
+      - /home/{{ansible_user}}/stacks/traefik/certs:/certs/
     networks:
       - {{traefik_network_name}}
-    environment:
-      CONTAINERS: 1
-      POST: 0
-    privileged: true
-    restart: unless-stopped
-    labels:
-      diun.enable: true
-
 
 networks:
   {{traefik_network_name}}:
     external: true
-    name: {{traefik_network_name}}

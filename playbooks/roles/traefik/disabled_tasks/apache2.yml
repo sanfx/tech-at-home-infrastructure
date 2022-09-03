@@ -1,0 +1,17 @@
+# As YAML Configuration File
+tcp:
+  routers:
+    router-apache2:
+      entrypoints:
+        - "https"
+      rule: "HostSNI(`access.devilsan.com`)"
+      service: web-service
+      tls: {}
+
+  services:
+    web-service:
+      loadBalancer:
+        servers:
+          - url: "192.168.1.10:443"
+
+

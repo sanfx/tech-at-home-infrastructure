@@ -1,14 +1,13 @@
 ---
 - hosts: localhost
   gather_facts: false
-  run_once: true
   vars_files:
     - "{{playbook_dir}}/vars.yml"
     - repo-pass.yml
   tasks:
     - name: clone a repo
       git:
-        repo: https://sanfx:{{password}}@github.com/sanfx/vault.git
+        repo: https://sanfx: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@github.com/sanfx/vault.git
         dest: "{{config_dir}}"
 
 - hosts: all
@@ -27,12 +26,12 @@
         - set_fact:
             role_failed: true
 
-  handlers:
-    - name: restart systemd-resolved
-      service:
-        name: systemd-resolved
-        state: restarted
-      when: reboot_required.stat.exists == false
+  # handlers:
+  #   - name: restart systemd-resolved
+  #     service:
+  #       name: systemd-resolved
+  #       state: restarted
+  #     when: reboot_required.stat.exists == false
 
 - hosts: swarm_managers
   vars_files:
@@ -49,7 +48,6 @@
         - set_fact:
             role_failed: true
 
-
 - hosts: swarm_managers
   vars_files:
     - "{{playbook_dir}}/vars.yml"
@@ -65,8 +63,8 @@
         name: dashboards
     - import_role:
         name: cluster_manage
-    - import_role:
-        name: backups
+    # - import_role:
+    #     name: backups
     - import_role:
         name: cluster_monitor
     - import_role:
@@ -90,6 +88,16 @@
       rescue:
         - set_fact:
             role_failed: true
+
+- hosts: rockpix
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    - include_vars: "/home/sanjeev/ansible/vault/config.yml"
+    - import_role:
+        name: traefik
+
 
 - hosts: localhost
   gather_facts: false

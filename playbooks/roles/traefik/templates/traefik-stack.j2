@@ -7,16 +7,23 @@ services:
     command:
       - "--api.dashboard=true"
       - "--providers.docker"
-      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.swarmMode=false"
       - "--entrypoints.web.address=:{{traefik_listen_port}}"
-      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker.exposedByDefault=true"
       - "--providers.docker.network={{traefik_network_name}}"
       - "--log.level=DEBUG"
       - "--log.filePath=/var/log/traefik.log"
       - "--accessLog.filePath=/var/log/access.log"
     ports:
-      - "{{traefik_listen_port}}:{{traefik_listen_port}}"
-      - "{{traefik_admin_port}}:8080"
+      - target: 443
+        published: 443
+        mode: host
+      - target: {{traefik_listen_port}}
+        published: {{traefik_listen_port}}
+        mode: host
+      - target: {{traefik_admin_port}}
+        published: 8080
+        mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

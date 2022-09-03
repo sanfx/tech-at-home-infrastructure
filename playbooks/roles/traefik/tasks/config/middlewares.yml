@@ -1,0 +1,18 @@
+http:
+  middlewares:
+    hsts:
+      headers:
+        framedeny: true
+        browserxssfilter: true
+        stsIncludeSubdomains: true
+        forceSTSHeader: false
+        stsPreload: true
+        stsSeconds: 31536000
+    redirect:
+      redirectScheme:
+        permanent: true
+        scheme: https
+    scheme:
+      headers:
+        customRequestHeaders:
+          X-Scheme: https

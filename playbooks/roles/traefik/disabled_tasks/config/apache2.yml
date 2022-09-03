@@ -1,0 +1,39 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-apache2:
+      entryPoints:
+        - "https"
+      rule: "Host(`devilsan.com`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls:
+        passthrough: true
+      service: apache2-service
+
+  services:
+    apache2-service:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.1.10:443"
+        passHostHeader: true
+
+  middlewares:
+    https-redirectscheme:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https

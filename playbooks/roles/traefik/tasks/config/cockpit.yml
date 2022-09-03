@@ -1,0 +1,29 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-cockpit-rockpi:
+      entrypoints:
+        - "https"
+      service: cockpit-service-rockpi
+      rule: "Host(`cockpit.access.devilsan.com`) || (Host(`cockpit.access.devilsan.com`) && Path(`/rockpi`))"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+      tls:
+        certResolver: linodev4
+        options: default
+        domains:
+          - main: access.devilsan.com
+            sans:
+              - cockpit.access.devilsan.com
+
+  services:
+    cockpit-service-rockpi:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://192.168.1.10:9090"
+        passHostHeader: true

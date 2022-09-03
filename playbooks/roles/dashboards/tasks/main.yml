@@ -65,6 +65,7 @@
 
 - name: Deploy Dashboards stack from a compose file (on first swarm node)
   tags: ["dashboard"]
+  ignore_errors: true
   docker_stack:
     state: present
     name: dashboards

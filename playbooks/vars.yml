@@ -1,2 +1,11 @@
-config_dir: "{{playbook_dir}}/vault/"
+app_domain_name: home.local
+config_dir: "/home/sanjeev/ansible/docker-swarm-infrastructure/playbooks/vault/"
 ansible_python_interpreter: /usr/bin/python3
+password: "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"
+traefik_web_ipaddress: 192.168.1.11
+traefik_listen_port: 80
+traefik_admin_port: 8081
+traefik_network_name: web
+traefik_app_name: traefik
+traefik_admin_user: admin
+traefik_admin_password: password1234

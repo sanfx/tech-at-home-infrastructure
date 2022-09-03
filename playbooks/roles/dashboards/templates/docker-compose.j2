@@ -9,7 +9,9 @@ services:
     volumes:
       - /data/homer/assets:/www/assets
     ports:
-      - 8095:8080
+      - target: 8080
+        published: 8095
+        mode: host
     # Set any environmental variables
     environment:
       DOCKER_HOST: dockersocket
@@ -93,4 +95,3 @@ services:
 networks:
   {{traefik_network_name}}:
     external: true
-    name: {{traefik_network_name}}
