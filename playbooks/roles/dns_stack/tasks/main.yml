@@ -1,11 +1,11 @@
 ---
-- name: Verify stacks directory exists (on first swarm node)
+- name: Verify stacks  and lighttpd directory exists.
   tags: ["pihole"]
   file:
-    path: "/home/{{ansible_user}}/stacks"
+    path: "/home/{{ansible_user}}/stacks/lighttpd"
     state: directory
 
-- name: Verify dns directory exists (on first swarm node)
+- name: Verify dns directory exists
   tags: ["dns"]
   file:
     path: "/home/{{ansible_user}}/stacks/dns"
@@ -79,11 +79,32 @@
       - /home/{{ansible_user}}/stacks/dns/dns-stack.yml
 
 - name: Create docker-compose file for Pihole(on first swarm node)
-
   tags: ["pihole"]
   template:
     src: pihole-stack.j2
     dest: /home/{{ansible_user}}/stacks/pihole/docker-compose.yml
+    mode: 0775
+
+- name: Create lighttpd config file for lighttpd used by Pihole
+  tags: ["pihole", "config"]
+  template:
+    src: lighttpd-external.j2
+    dest: /home/{{ansible_user}}/stacks/lighttpd/external.conf
+    mode: 0775
+
+-  name: Update nameserver in /etc/resolv.conf
+   tags: ["pihole", "config"]
+   lineinfile:
+     path: /etc/resolv.conf
+     state: present
+     line: 'nameserver 127.0.0.53'
+     insertbefore: BOF
+
+- name: Create custom dns record list for Pihole
+  tags: ["pihole", "config"]
+  template:
+    src: pihole-custom-list.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/custom.list
     mode: 0775
 
 # - name: Check that the webproc executable exists
@@ -141,7 +162,7 @@
 - name: Docker compose Service file creation for Pihole
   tags: ["pihole"]
   copy:
-    dest: /etc/systemd/system/docker-compose.service
+    dest: /etc/systemd/system/pihole-docker-compose.service
     content: |
       [Unit]
       Description=Docker Compose Service
@@ -155,6 +176,19 @@
       ExecStop=/usr/local/bin/docker-compose down
       [Install]
       WantedBy=multi-user.target
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["pihole"]
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
+- name: Systemd service activation
+  tags: ["pihole"]
+  become: yes
+  ansible.builtin.systemd:
+    name: pihole-docker-compose.service
+    enabled: yes
+    state: started
 
 # - name: DNSMasq Webproc Systemd service activation
 #   tags: ["dns"]

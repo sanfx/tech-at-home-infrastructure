@@ -9,3 +9,12 @@ traefik_network_name: web
 traefik_app_name: traefik
 traefik_admin_user: admin
 traefik_admin_password: password1234
+REV_SERVER_TARGET: "192.168.1.1"
+pihole_app_name: pihole
+pihole_web_password: piHole123
+pihole_web_port: 80
+pihole_web_protocol: http
+pihole_ftl_dns_port: 53
+pihole_host_ip: 192.168.1.11
+pihole_exporter_port: 9617
+pihole_api_token: e30e161a388be00d32f341f2b753d3691785ecc1dbf9bc8ef291b130f4f18b75

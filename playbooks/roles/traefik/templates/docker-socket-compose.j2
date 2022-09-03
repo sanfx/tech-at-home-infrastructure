@@ -37,6 +37,14 @@ services:
       - target: {{traefik_admin_port}}
         published: {{traefik_admin_port}}
         mode: host
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

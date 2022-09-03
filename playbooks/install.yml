@@ -97,6 +97,8 @@
     - include_vars: "/home/sanjeev/ansible/vault/config.yml"
     - import_role:
         name: traefik
+    - import_role:
+        name: dns_stack
 
 
 - hosts: localhost

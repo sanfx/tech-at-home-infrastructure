@@ -5,29 +5,29 @@ services:
   pihole:
     image: pihole/pihole:latest
     hostname: "{{pihole_app_name}}"
-    user: "root:root"
-    privileged: true
     ports:
-      - "{{pihole_ftl_dns_port}}:{{pihole_ftl_dns_port}}/udp"
-      - "8085:{{pihole_web_port}}"
-    restart: always
+      - "192.168.1.11:{{pihole_ftl_dns_port}}53:{{pihole_ftl_dns_port}}/udp"
+      - "192.168.1.11:{{pihole_ftl_dns_port}}53:{{pihole_ftl_dns_port}}/tcp"
+      - "192.168.1.11:8088:{{pihole_web_port}}/tcp"
+    restart: unless-stopped
     volumes:
       - /etc/pihole:/etc/pihole
       - "/home/{{ansible_user}}/stacks/lighttpd/external.conf:/etc/lighttpd/external.conf"
+      - "/home/{{ansible_user}}/stacks/pihole/custom.list:/etc/pihole/custom.list"
       - dnsmasq:/etc/dnsmasq.d
     environment:
       - "TZ=Europe/London"
       - "DNS1=1.1.1.1"
       - "DNS2=8.8.4.4"
       - "REV_SERVER=true"
-      - "REV_SERVER_CIDR=192.168.1.0/24" #Update these fields to match your environment
+      - "REV_SERVER_CIDR=192.168.1.1/24" #Update these fields to match your environment
       - "REV_SERVER_TARGET={{REV_SERVER_TARGET}}"
       - "REV_SERVER_DOMAIN={{app_domain_name}}"
       - "WEBPASSWORD={{pihole_web_password}}"
     cap_add:
         - SYS_PTRACE
     networks:
-      - bridge
+      - {{traefik_network_name}}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pihole-http.rule=Host(`{{pihole_app_name}}.{{app_domain_name}}`)"
@@ -44,4 +44,3 @@ volumes:
 networks:
   {{traefik_network_name}}:
     external: true
-    name: {{traefik_network_name}}

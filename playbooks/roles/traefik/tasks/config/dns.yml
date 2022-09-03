@@ -1,0 +1,15 @@
+# As YAML Configuration File
+udp:
+  routers:
+    router-dns:
+      entryPoints:
+        - dns
+      service: dns-service
+
+  services:
+    dns-service:
+      loadBalancer:
+        servers:
+          - address: "192.168.1.11:5353"
+          - address: "192.168.1.10:53"
+
