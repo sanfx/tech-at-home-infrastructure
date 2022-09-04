@@ -16,3 +16,9 @@ http:
       headers:
         customRequestHeaders:
           X-Scheme: https
+    stripper:
+      stripPrefix:
+        prefixes:
+          - "/rockpix"
+          - "/rockpi"
+        forceSlash: true
