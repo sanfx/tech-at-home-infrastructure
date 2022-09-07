@@ -55,11 +55,11 @@
     mode: '0644'
 
 - name: Print information
-  tags: ["traefik"]
+  tags: ["traefiki", "print"]
   debug: 
     msg: 
     - "{{config_dir}}"
-    - "{{playbook_dir}}"
+    - "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
 
 - name: Generate admin password hash
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
@@ -67,7 +67,7 @@
   register: traefikpassword
 
 - name: install docker compose 
-  tags: ["traefik"]   
+  tags: ["traefiki"]   
   get_url:
     url: https://github.com/docker/compose/releases/download/1.27.3/docker-compose-Linux-x86_64
     dest: /usr/local/bin/docker-compose

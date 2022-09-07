@@ -22,5 +22,6 @@ http:
           interval: "5s"
           timeout: "3s"
         servers:
-          - url: "http://192.168.1.10:8080"
+          - url: "http://100.71.28.98:8080"
+          # - url: "http://192.168.1.10:8080"
         passHostHeader: true

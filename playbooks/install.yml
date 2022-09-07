@@ -7,7 +7,7 @@
   tasks:
     - name: clone a repo
       git:
-        repo: https://sanfx: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@github.com/sanfx/vault.git
+        repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
         dest: "{{config_dir}}"
 
 - hosts: all

@@ -9,7 +9,7 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      - LINODE_TOKEN=96b26ae5f02cd961dba2e885ee5fd29d152e83b722c19251b86ab09fbca87f69
+      - LINODE_TOKEN={{lookup('env', 'LINODE_TOKEN')}}
     labels:
       - "diun.enable: true"
       - "traefik.enable=true"

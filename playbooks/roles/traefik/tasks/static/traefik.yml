@@ -26,7 +26,7 @@ accessLog:
 log:
   filePath: "/var/log/traefik.log"
   format: json
-  level: DEBUG
+  level: ERROR
 
 entryPoints:
   traefik:
@@ -41,11 +41,6 @@ entryPoints:
     address: ":443"
     http:
       tls: default
-    forwardedHeaders:
-         insecure: true
-         trustedIPs:
-           - "127.0.0.1/32"
-           - "192.168.1.1/32"
 
 api:
   insecure: true
