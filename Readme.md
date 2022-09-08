@@ -1,10 +1,11 @@
-# Docker Swarm Infrastructure for Home Lab
+# IT and IOT lab at Home Infrastructure
 
-This repository contains Vagrantfile to setup Docker Swarm cluster in VirtualBox running on a Windows 10 in a Mini PC :man_facepalming: , and ansible playbook to deploy services into Docker Swarm setup at Home lab. A windows based machine for server stuff might not be a good choice but for set of specific needs Its working and I found a decent quite and tiny box.
+This repository contains Vagrantfile to setup ubuntu vm's in VirtualBox running on a Windows 10 in a Mini PC :man_facepalming: , and ansible playbook to deploy services into Docker Swarm setup at Home lab. A windows based machine for server stuff might not be a good choice but for set of specific needs Its working and I found a decent quite and tiny box.
 
+In addition to Window Mini PC, I also have 4 Single board computer nodes out of which 1 is x86 rockpix and rockpi 4B and rockpro64 which are arm64 based. The fourth one is raspberry pi zero which I use for audio alert in-case a server or a critical goes down.
 
 ### Why Mini PC?
-Mini PC suited my budget as I wanted to spend as little as possible and get a decent one but price would go up as you wish for more. So I picked up Beelink Mini PC that has 8GB RAM and 256GB SSD. Linux one's were hard to find and I didnt wanted to jump into spending time re-installing linux on the mini pc. Beside just learning to use Ansible and Hashicorp Vagrant I also wanted to move the nextcloud to this stack.(the part which I still haven't started yet).
+Mini PC was added recently and suited my budget as I wanted to spend as little as possible and get a decent one but price would go up as you wish for more. So I picked up Beelink Mini PC that has 8GB RAM and 256GB SSD. Linux one's were hard to find and I didnt wanted to jump into spending time re-installing linux on the mini pc. Beside just learning to use Ansible and Hashicorp Vagrant I also wanted to move the nextcloud to this stack.(the part which I still haven't started yet).
 
 
 ## Pre-requisite 
