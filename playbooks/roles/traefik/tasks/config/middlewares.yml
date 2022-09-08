@@ -1,5 +1,15 @@
 http:
   middlewares:
+    sonarr-dark:
+      plugin:
+        traefik-themepark:
+          app: sonarr
+          theme: dark
+    pihole-aquamarine:
+      plugin:
+        traefik-themepark:
+          app: pihole
+          theme: dark
     hsts:
       headers:
         frameDeny: true

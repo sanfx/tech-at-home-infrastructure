@@ -12,6 +12,12 @@ metrics:
       - 1.2
       - 5.0
 
+experimental:
+  plugins:
+    traefik-themepark:
+      moduleName: "github.com/packruler/traefik-themepark"
+      version: "v1.2.2"
+
 accessLog:
   filePath: "/var/log/access.log"
   format: json
@@ -53,6 +59,10 @@ providers:
   file:
     directory: "/config/"
     watch: true
+  consulCatalog:
+    defaultRule: "Host(`{{ .Name }}.access.devilsan.com`)"
+    endpoint:
+      address: http://192.168.1.39:8500
   docker:
     endpoint: "unix:///var/run/docker.sock"
     watch: true
