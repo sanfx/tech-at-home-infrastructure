@@ -9,6 +9,8 @@ traefik_network_name: web
 traefik_app_name: traefik
 traefik_admin_user: admin
 traefik_admin_password: password1234
+uptime_kuma_app_name: uptime
+uptime_kuma_app_port: 3001
 REV_SERVER_TARGET: "192.168.1.1"
 pihole_app_name: pihole
 pihole_web_password: piHole123
