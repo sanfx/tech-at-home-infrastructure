@@ -1,8 +1,8 @@
 ---
-- name: Verify stacks/cluster_monitoring directory exists (on first swarm node)
-  tags: ["monitor"]
+- name: Verify stacks/uptime-kuma and its data directory exists
+  tags: ["monitor", "uptime"]
   file:
-    path: "/home/{{ansible_user}}/stacks/cluster_monitoring"
+    path: "/home/{{ansible_user}}/stacks/monitor/uptime-kuma/data"
     state: directory
 
 - name: Verify prometheus directory exists (on first swarm node)
@@ -62,3 +62,39 @@
     compose:
       - /home/{{ansible_user}}/stacks/cluster_monitoring/cluster-monitoring-stack.yml
   tags: ["monitor"]
+
+- name: Create docker-compose stack file.
+  tags: ["monitor", "uptime"]
+  template:
+    src: uptime-kuma.j2
+    dest: /home/{{ansible_user}}/stacks/monitor/uptime-kuma/docker-compose.yml
+    mode: 0775
+
+- name: Uptime-kuma Service file creation
+  tags: ["monitor", "uptime"]
+  copy:
+    dest: /etc/systemd/system/uptime-docker-compose.service
+    content: |
+      [Unit]
+      Description=Docker Compose Service for Uptime Kuma
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/home/{{ansible_user}}/stacks/monitor/uptime-kuma
+      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+      ExecStop=/usr/local/bin/docker-compose down
+      [Install]
+      WantedBy=multi-user.target
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
+- name: Systemd service activation
+  tags: ["uptime"]
+  ansible.builtin.systemd:
+    name: uptime-docker-compose.service
+    enabled: yes
+    state: started
