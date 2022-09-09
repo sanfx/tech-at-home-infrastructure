@@ -1,6 +1,5 @@
 # As YAML Configuration File
 http:
-
   middlewares:
     add-admin-prefix:
       addPrefix:
@@ -16,8 +15,6 @@ http:
         - hsts
         - redirect
         - scheme
-        - add-admin-prefix
-        - pihole-aquamarine
       tls:
         certResolver: linodev4
         domains:
@@ -39,5 +36,5 @@ http:
           interval: "5s"
           timeout: "3s"
         servers:
-          - url: "http://192.168.1.46:80"
+          - url: "http://192.168.1.39:80"
         passHostHeader: true
