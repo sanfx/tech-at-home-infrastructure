@@ -9,7 +9,7 @@ services:
       - "--providers.docker"
       - "--providers.docker.swarmMode=false"
       - "--entrypoints.web.address=:{{traefik_listen_port}}"
-      - "--providers.docker.exposedByDefault=true"
+      - "--providers.docker.exposedByDefault=false"
       - "--providers.docker.network={{traefik_network_name}}"
       - "--log.level=DEBUG"
       - "--log.filePath=/var/log/traefik.log"
