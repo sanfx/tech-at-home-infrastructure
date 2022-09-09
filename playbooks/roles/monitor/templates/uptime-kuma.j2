@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.18.0
+    hostname: "{{uptime_kuma_app_name}}"
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /fulldisk/uptime_kuma:/app/data
+    dns:
+      - 192.168.1.11
+      - 192.168.1.10
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime_kuma-http.rule=Host(`{{uptime_kuma_app_name}}.{{app_domain_name}}`)"
+      - "traefik.http.routers.uptime_kuma-http.entrypoints={{traefik_network_name}}"
+      - "traefik.http.routers.uptime_kuma-http.service=uptime_kuma-http-svc"
+      - "traefik.http.services.uptime_kuma-http-svc.loadbalancer.server.port={{uptime_kuma_app_port}}"
+      - "traefik.http.routers.uptime-https.entrypoints=https"
+
+      - "traefik.http.routers.uptime-https.rule=Host(`uptime.access.devilsan.com`)"
+      - "traefik.http.routers.uptime-https.tls=true"
+      - "traefik.http.routers.uptime-https.tls.certresolver=linodev4"
+      - "traefik.http.routers.uptime-https.tls.domains[0].main=uptime.access.devilsan.com"
+    restart: unless-stopped
+    container_name: "{{uptime_kuma_app_name}}"
+
+networks:
+  {{traefik_network_name}}:
+    external: true
