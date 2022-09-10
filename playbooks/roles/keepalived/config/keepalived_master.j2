@@ -1,0 +1,57 @@
+global_defs {
+  router_id master_node
+  enable_script_security
+  script_user keepalived_script 
+}
+
+vrrp_sync_group VRRP1 {
+#   Group the vpn and lan VRRP instances so they fail over together
+    group {
+        vpn
+        lan
+        }
+}
+
+vrrp_instance vpn {
+    state MASTER
+    interface tailscale0
+    virtual_router_id 92
+    priority 200
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass dnsdoh12
+    }
+
+  unicast_src_ip 100.71.28.98
+  unicast_peer {
+    100.91.199.41
+  }
+
+#   Define the virtual IP address for the internal network interface
+    virtual_ipaddress {
+        100.72.28.98
+    }
+}
+
+vrrp_instance lan {
+    state MASTER
+    interface eth0
+    virtual_router_id 91
+    priority 200
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass nxtcloud
+    }
+
+  unicast_src_ip 192.168.1.10
+  unicast_peer {
+    192.168.1.11
+  }
+
+#   Define the virtual IP address for the external network interface
+    virtual_ipaddress {
+        192.168.1.250
+    }
+}
