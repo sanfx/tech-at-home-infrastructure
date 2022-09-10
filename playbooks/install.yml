@@ -101,6 +101,8 @@
         name: dns_stack
     - import_role:
         name: monitor
+    - import_role:
+        name: keepalived
 
 - hosts: remote
   vars_files:
