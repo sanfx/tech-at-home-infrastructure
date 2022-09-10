@@ -5,37 +5,6 @@
     path: "/home/{{ansible_user}}/stacks/traefik/"
     state: directory
 
-- name: Verify keepalived directory exists on {{ansible_hostname}}
-  tags: ["keepalived"]
-  file:
-    path: "/home/{{ansible_user}}/stacks/keepalived/assets"
-    state: directory
-
-- name: Create keepalived config file (on first swarm node {{ansible_hostname}} )
-  when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["keepalived"]
-  template:
-    src: keepalived-node-0.j2
-    dest: /home/{{ansible_user}}/stacks/keepalived/keepalived.conf
-    mode: 0775
-
-- name: Copy Keepalived assets with owner and permissions
-  tags: ["keepalived"]
-  ansible.builtin.copy:
-    src: ./keepalived/assets
-    dest: /home/{{ansible_user}}/stacks/keepalived/assets/
-    owner: "{{ansible_user}}"
-    group: "{{ansible_user}}"
-    mode: '0644'
-
-- name: Create keepalived config file (on first swarm node {{ansible_hostname}})
-  when: inventory_hostname == groups['swarm_managers'][1]
-  tags: ["keepalived"]
-  template:
-    src: keepalived-node-1.j2
-    dest: /home/{{ansible_user}}/stacks/keepalived/keepalived.conf
-    mode: 0775
-
 - name: Copy traefik static with owner and permissions
   tags: ["traefik", "config"]
   ansible.builtin.copy:
@@ -54,24 +23,10 @@
     group: "{{ansible_user}}"
     mode: '0644'
 
-- name: Print information
-  tags: ["traefiki", "print"]
-  debug: 
-    msg: 
-    - "{{config_dir}}"
-    - "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
-
 - name: Generate admin password hash
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
   tags: ["traefik"]
   register: traefikpassword
-
-- name: install docker compose 
-  tags: ["traefiki"]   
-  get_url:
-    url: https://github.com/docker/compose/releases/download/1.27.3/docker-compose-Linux-x86_64
-    dest: /usr/local/bin/docker-compose
-    mode: 755
 
 - name: Create docker-compose stack file.
   tags: ["traefik"]
@@ -113,7 +68,7 @@
   become_method: sudo
   ignore_errors: true
 
-- name: Service file creation
+- name: Traefik docker compose Service file creation
   tags: ["traefik"]
   copy:
     dest: /etc/systemd/system/docker-compose.service
@@ -141,14 +96,3 @@
     name: docker-compose.service
     enabled: yes
     state: started
-
-# - name: Deploy stack from a compose file (on first swarm node)
-
-#   tags: ["traefik"]
-#   become: true
-#   become_method: sudo
-#   docker_stack:
-#     state: present
-#     name: traefik
-#     compose:
-#       - /home/{{ansible_user}}/stacks/traefik/traefik-stack.yml
