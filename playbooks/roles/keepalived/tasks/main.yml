@@ -12,12 +12,12 @@
       src: config/{{ ka_hosts[inventory_hostname]['state'] }}
       dest: /etc/keepalived/keepalived.conf
 
-    - name: Systemd service activation
-      tags: ["keepalived"]
-      become: yes
-      ansible.builtin.systemd:
-        name: keepalived.service
-        enabled: yes
-        state: reloaded
+  - name: Systemd service activation
+    tags: ["keepalived"]
+    become: yes
+    ansible.builtin.systemd:
+      name: keepalived.service
+      enabled: yes
+      state: reloaded
 
 
