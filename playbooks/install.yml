@@ -6,11 +6,22 @@
     - repo-pass.yml
   tasks:
     - name: clone a repo
+      tags:
+         - always
+         - printa
       git:
         repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
         dest: "{{config_dir}}"
+        depth: 1
+
+    - name: print info
+      tags: ["always", "printa", "config"]
+      debug:
+        msg:
+          - "{{config_dir}}"
 
 - hosts: all
+  tags: ["never", "all"]
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
@@ -25,13 +36,6 @@
       rescue:
         - set_fact:
             role_failed: true
-
-  # handlers:
-  #   - name: restart systemd-resolved
-  #     service:
-  #       name: systemd-resolved
-  #       state: restarted
-  #     when: reboot_required.stat.exists == false
 
 - hosts: swarm_managers
   vars_files:
@@ -49,6 +53,7 @@
             role_failed: true
 
 - hosts: swarm_managers
+  tags: ["never"]
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
@@ -75,6 +80,7 @@
       #       role_failed: true
 
 - hosts: swarm_workers
+  tags: ["never"]
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
@@ -90,11 +96,12 @@
             role_failed: true
 
 - hosts: local
+  tags: ["never", "local"]
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
-    - include_vars: "/home/sanjeev/ansible/vault/config.yml"
+    - include_vars: "{{config_dir}}/config.yml"
     - import_role:
         name: traefik
     - import_role:
@@ -105,13 +112,14 @@
         name: keepalived
 
 - hosts: remote
+  tags: ["never", "remote"]
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
     - import_role:
-        name: dns_stack
-      
+        name: haproxy
+    
 - hosts: localhost
   gather_facts: false
   run_once: true
@@ -124,4 +132,5 @@
         path: "{{config_dir}}"
       tags:
         - always
+        - printa
         - repo-clean
