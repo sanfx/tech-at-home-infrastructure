@@ -27,7 +27,7 @@ If you want to use this repo as starting poing, you would have to change few thi
 What you would need is to list all the variables and either store locally your own config.yaml in the `{{playbook_dir}}/vault` or create a vault git repo and update it in install.yaml playbook.
 
 
-## Nextcloud Setup
+## Nextcloud Setup (Since 2020)
 
 I have two instances of Nextcloud running locally. The primary instance of nextcloud runs on the node facing the internet through a remote proxy on linode.
 The second instance of nextcloud is the backup in case the primary instance is down.
@@ -38,6 +38,11 @@ and requiring efforts. So for the time being single node mariadb instance is fin
 
 
 The data is being kept redundent on both of these nodes. Both the local nodes are connected to 1TB storage and both the nodes are kept in sync. For keeping the data in sync I am using Syncthing.
+
+
+This was the original setup of Nextcloud however with the passing of time it has reduced to single redis and single instance of mariadb.
+
+<img src="https://instagram.flhr1-2.fna.fbcdn.net/v/t51.2885-15/133745031_2771479043107089_4878090111319432882_n.jpg?stp=dst-jpg_e35&_nc_ht=instagram.flhr1-2.fna.fbcdn.net&_nc_cat=109&_nc_ohc=dPfe4i7QxRUAX8uxzDT&edm=ALQROFkBAAAA&ccb=7-5&ig_cache_key=MjQ3NDk1MDk1MzA0OTUwNDg4OQ%3D%3D.2-ccb7-5&oh=00_AT-rnpjs__h0M8MOoUnv0SFGJeAqdtHoYWihqAUamy32xg&oe=63251FC1&_nc_sid=30a2ef"  style="float: left; margin-right: 10px;" />
 
 
 ## Contributing
