@@ -1,14 +1,14 @@
 [local]
-192.168.1.10:7729
-192.168.1.11
+rockpi:7729
+rockpix
 
 [remote]
-100.108.105.3:7729
+proxy:7729
 
 [vm]
-192.168.1.200
-192.168.1.201
-192.168.1.202
+vm1
+vm2
+vm3
 
 [all:vars]
 ansible_connection=ssh
