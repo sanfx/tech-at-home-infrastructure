@@ -5,11 +5,6 @@ rockpix
 [remote]
 proxy:7729
 
-[vm]
-vm1
-vm2
-vm3
-
 [all:vars]
 ansible_connection=ssh
 ansible_user=ansible

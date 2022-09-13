@@ -6,6 +6,9 @@ services:
     hostname: "{{traefik_app_name}}"
     container_name: traefik
     restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 0.5
     security_opt:
       - no-new-privileges:true
     environment:

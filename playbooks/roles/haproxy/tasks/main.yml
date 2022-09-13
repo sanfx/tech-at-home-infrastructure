@@ -1,0 +1,14 @@
+---
+- name: Create haproxy yaml config file.
+  tags: ["haproxy"]
+  template:
+    src: haproxy.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Haproxy Systemd service reload
+  tags: ["haproxy"]
+  become: yes
+  ansible.builtin.systemd:
+    name: haproxy.service
+    enabled: yes
+    state: reloaded
