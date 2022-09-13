@@ -56,7 +56,7 @@
 #     mode: 0775
 
 - name: Create docker-compose stack file for DNS and DOH(on first swarm node)
-  tags: ["dns"]
+  tags: ["never", "dns"]
   template:
     src: dns-stack.j2
     dest: /home/{{ansible_user}}/stacks/dns/dns-stack.yml
@@ -71,7 +71,7 @@
 
 - name: Deploy DNS stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
-  tags: ["dns"]
+  tags: ["never", "dns"]
   docker_stack:
     state: present
     name: dns
@@ -79,7 +79,7 @@
       - /home/{{ansible_user}}/stacks/dns/dns-stack.yml
 
 - name: Create docker-compose file for Pihole(on first swarm node)
-  tags: ["pihole"]
+  tags: ["never", "pihole"]
   template:
     src: pihole-stack.j2
     dest: /home/{{ansible_user}}/stacks/pihole/docker-compose.yml
@@ -93,7 +93,7 @@
     mode: 0775
 
 -  name: Update nameserver in /etc/resolv.conf
-   tags: ["pihole", "config"]
+   tags: ["never", "pihole", "config"]
    lineinfile:
      path: /etc/resolv.conf
      state: present
@@ -160,7 +160,7 @@
 #       WantedBy=multi-user.target
 
 - name: Docker compose Service file creation for Pihole
-  tags: ["pihole"]
+  tags: ["never", "pihole"]
   copy:
     dest: /etc/systemd/system/pihole-docker-compose.service
     content: |
@@ -178,12 +178,12 @@
       WantedBy=multi-user.target
 
 - name: forcing systemd to re-execute itself (2.8 and above)
-  tags: ["pihole"]
+  tags: ["never", "pihole"]
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
-  tags: ["pihole"]
+  tags: ["never", "pihole"]
   become: yes
   ansible.builtin.systemd:
     name: pihole-docker-compose.service
