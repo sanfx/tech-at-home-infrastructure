@@ -23,9 +23,9 @@ vrrp_instance vpn {
         auth_pass dnsdoh12
     }
 
-  unicast_src_ip 100.71.28.98
+  unicast_src_ip {{tailscale_rockpi_ip}}
   unicast_peer {
-    100.91.199.41
+    {{tailscale_rockpix_ip}}
   }
 
 #   Define the virtual IP address for the internal network interface
@@ -45,13 +45,13 @@ vrrp_instance lan {
         auth_pass nxtcloud
     }
 
-  unicast_src_ip 192.168.1.10
+  unicast_src_ip {{lan_rockpi_ip}}
   unicast_peer {
-    192.168.1.11
+    {{lan_rockpix_ip}}
   }
 
 #   Define the virtual IP address for the external network interface
     virtual_ipaddress {
-        192.168.1.250
+        {{keepalived_virtual_ip}}
     }
 }

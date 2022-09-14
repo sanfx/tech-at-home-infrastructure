@@ -1,19 +1,20 @@
----
+---    
   - name: copy keepalived configuration 
-    tags: ["keepalived", "config"]
+    tags: ["keepalived", "config", "never"]
     become: yes
     vars:
       ka_hosts:
-        192.168.1.10:
+        rockpi:
           state: keepalived_master.j2
-        192.168.1.11:
+        rockpix:
           state: keepalived_backup.j2
-    ansible.builtin.copy:
-      src: config/{{ ka_hosts[inventory_hostname]['state'] }}
+    template:
+      src: "{{ ka_hosts[inventory_hostname]['state'] }}"
       dest: /etc/keepalived/keepalived.conf
 
+
   - name: Systemd service activation
-    tags: ["keepalived"]
+    tags: ["keepalived", "never"]
     become: yes
     ansible.builtin.systemd:
       name: keepalived.service

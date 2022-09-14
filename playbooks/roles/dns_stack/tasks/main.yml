@@ -1,37 +1,37 @@
 ---
 - name: Verify stacks  and lighttpd directory exists.
-  tags: ["pihole"]
+  tags: ["pihole", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/lighttpd"
     state: directory
 
 - name: Verify dns directory exists
-  tags: ["dns"]
+  tags: ["dns", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/dns"
     state: directory
 
 - name: Verify dnsmasq/config directory exists (on first swarm node)
-  tags: ["dnsmasq"]
+  tags: ["dnsmasq", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/dnsmasq/config/"
     state: directory
 
 - name: Verify coredns directory exists
-  tags: ["coredns"]
+  tags: ["coredns", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/coredns/"
     state: directory
 
 - name: Copy coredns rules with owner and permissions
-  tags: ["coredns"]
+  tags: ["coredns", "never"]
   ansible.builtin.copy:
     src: ./coredns
     dest: /home/{{ansible_user}}/stacks/
     mode: '0644'
 
 - name: Verify pihole exporter directory exists (on first swarm node)
-  tags: ["pihole"]
+  tags: ["pihole", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/pihole/exporter"
     state: directory
@@ -101,7 +101,7 @@
      insertbefore: BOF
 
 - name: Create custom dns record list for Pihole
-  tags: ["pihole", "config"]
+  tags: ["pihole", "config", "never"]
   template:
     src: pihole-custom-list.j2
     dest: /home/{{ansible_user}}/stacks/pihole/custom.list

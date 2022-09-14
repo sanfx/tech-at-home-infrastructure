@@ -1,0 +1,78 @@
+--- 
+global: 
+  external_labels: 
+    monitor: codelab-monitor
+  scrape_interval: 15s
+scrape_configs: 
+  - 
+    job_name: prometheus
+    scrape_interval: 5s
+    static_configs: 
+      - 
+        targets: 
+          - "localhost:9090"
+  - 
+    job_name: kubernetes-service-endpoints
+    kubernetes_sd_configs: 
+      - 
+        role: endpoints
+    relabel_configs: 
+      - 
+        action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - 
+        action: replace
+        source_labels: 
+          - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - 
+        action: replace
+        source_labels: 
+          - __meta_kubernetes_service_name
+        target_label: kubernetes_name
+  - 
+    job_name: pihole
+    scrape_interval: 15s
+    static_configs: 
+      - 
+        targets: 
+          - "{{tailscale_rockpi_ip}}:9617"
+  - 
+    job_name: apache
+    scrape_interval: 15s
+    static_configs: 
+      - 
+        targets: 
+          - "localhost:9117"
+
+  - 
+    job_name: node_exporter
+    static_configs: 
+      - 
+        targets: 
+          - "{{tailscale_rockpi_ip}}:9100"
+          - "{{low_profile_pizero_ip}}:9100"
+
+  - 
+    file_sd_configs: 
+      - 
+        files: 
+          - /etc/prometheus/targets.yml
+    job_name: blackbox_exporter
+    metrics_path: /probe
+    params: 
+      module: 
+        - http_2xx
+    relabel_configs: 
+      - 
+        source_labels: 
+          - __address__
+        target_label: __param_target
+      - 
+        source_labels: 
+          - __param_target
+        target_label: instance
+      - 
+        replacement: "{{tailscale_proxy_ip}}:9115"
+        target_label: __address__
+    scheme: http

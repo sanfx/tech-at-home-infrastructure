@@ -110,6 +110,8 @@
         name: monitor
     - import_role:
         name: keepalived
+    - import_role:
+        name: prometheus
 
 - hosts: remote
   tags: ["never", "remote"]
