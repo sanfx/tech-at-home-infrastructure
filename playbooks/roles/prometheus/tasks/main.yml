@@ -1,0 +1,17 @@
+---
+
+- name: Create prometheus yaml config file.
+  tags: ["prometheus", "never"]
+  when: inventory_hostname == 'rockpi'
+  template:
+    src: prometheus.j2
+    dest: /etc/prometheus/prometheus.yml
+
+- name: Prometheus Systemd service reload
+  tags: ["prometheus", "never"]
+  when: inventory_hostname == 'rockpi'
+  become: yes
+  ansible.builtin.systemd:
+    name: prometheus.service
+    enabled: yes
+    state: reloaded
