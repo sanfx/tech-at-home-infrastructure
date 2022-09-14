@@ -23,9 +23,9 @@ vrrp_instance vpn {
         auth_pass dnsdoh12
     }
 
-    unicast_src_ip 100.91.199.41
+    unicast_src_ip {{tailscale_rockpix_ip}}
     unicast_peer {
-        100.71.28.98
+        {{tailscale_rockpi_ip}}
     }
 
 
@@ -48,14 +48,14 @@ vrrp_instance lan {
         auth_pass nxtcloud
     }
 
-    unicast_src_ip 192.168.1.11
+    unicast_src_ip {{lan_rockpix_ip}}
     unicast_peer {
-        192.168.1.10
+        {{lan_rockpi_ip}}
     }
 
 #   Define the virtual IP address for the external network interface
     virtual_ipaddress {
-        192.168.1.250
+        {{keepalived_virtual_ip}}
     }
 
     notify "/etc/keepalived/assets/notify.sh"
