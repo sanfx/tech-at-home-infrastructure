@@ -1,12 +1,14 @@
 ---
 - name: Verify stacks directory exists (on first swarm node)
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   file:
     path: "/home/{{ansible_user}}/stacks/traefik/"
     state: directory
 
 - name: Copy traefik static with owner and permissions
   tags: ["traefik", "config", "never"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.copy:
     src: ./static
     dest: /home/{{ansible_user}}/stacks/traefik/
@@ -16,6 +18,7 @@
 
 - name: Copy traefik dynamic with owner and permissions
   tags: ["traefik", "config", "never"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.copy:
     src: ./config
     dest: /home/{{ansible_user}}/stacks/traefik/
@@ -26,10 +29,12 @@
 - name: Generate admin password hash
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   register: traefikpassword
 
 - name: Create docker-compose stack file.
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   template:
     src: docker-socket-compose.j2
     dest: /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
@@ -65,11 +70,13 @@
     - "/var/log/access.log"
   become: true
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   become_method: sudo
   ignore_errors: true
 
 - name: Traefik docker compose Service file creation
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   copy:
     dest: /etc/systemd/system/docker-compose.service
     content: |
@@ -88,11 +95,13 @@
 
 - name: forcing systemd to re-execute itself (2.8 and above)
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
   tags: ["traefik", "never"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     name: docker-compose.service
     enabled: yes
