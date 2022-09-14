@@ -1,12 +1,12 @@
 ---
 - name: Verify stacks directory exists (on first swarm node)
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/traefik/"
     state: directory
 
 - name: Copy traefik static with owner and permissions
-  tags: ["traefik", "config"]
+  tags: ["traefik", "config", "never"]
   ansible.builtin.copy:
     src: ./static
     dest: /home/{{ansible_user}}/stacks/traefik/
@@ -15,7 +15,7 @@
     mode: '0644'
 
 - name: Copy traefik dynamic with owner and permissions
-  tags: ["traefik", "config"]
+  tags: ["traefik", "config", "never"]
   ansible.builtin.copy:
     src: ./config
     dest: /home/{{ansible_user}}/stacks/traefik/
@@ -25,11 +25,11 @@
 
 - name: Generate admin password hash
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   register: traefikpassword
 
 - name: Create docker-compose stack file.
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   template:
     src: docker-socket-compose.j2
     dest: /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
@@ -64,12 +64,12 @@
     - "/var/log/traefik.log"
     - "/var/log/access.log"
   become: true
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   become_method: sudo
   ignore_errors: true
 
 - name: Traefik docker compose Service file creation
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   copy:
     dest: /etc/systemd/system/docker-compose.service
     content: |
@@ -87,11 +87,12 @@
       WantedBy=multi-user.target
 
 - name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["traefik", "never"]
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
-  tags: ["traefik"]
+  tags: ["traefik", "never"]
   ansible.builtin.systemd:
     name: docker-compose.service
     enabled: yes
