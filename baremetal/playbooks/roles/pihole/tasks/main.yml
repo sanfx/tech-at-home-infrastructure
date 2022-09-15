@@ -1,6 +1,7 @@
 ---
 - name: Create custom dns record list for Pihole
   tags: ["pihole", "config", "never"]
+  when: inventory_hostname == 'rockpix'
   template:
     src: pihole-custom-list.j2
     dest: /home/{{ansible_user}}/stacks/pihole/custom.list
@@ -8,6 +9,7 @@
 
 - name: Docker compose Service file creation for Pihole
   tags: ["never", "pihole"]
+  when: inventory_hostname == 'rockpix'
   copy:
     dest: /etc/systemd/system/pihole-docker-compose.service
     content: |
@@ -26,11 +28,13 @@
 
 - name: forcing systemd to re-execute itself (2.8 and above)
   tags: ["never", "pihole"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
   tags: ["never", "pihole"]
+  when: inventory_hostname == 'rockpix'
   become: yes
   ansible.builtin.systemd:
     name: pihole-docker-compose.service

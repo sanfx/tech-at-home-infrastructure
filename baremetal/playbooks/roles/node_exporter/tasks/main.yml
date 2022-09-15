@@ -43,6 +43,19 @@
     group: root
     mode: 0755
 
+- name: remove repo.
+  vars:
+    node_hosts:
+      x86_64:
+        archi: amd64
+      aarch64:
+        archi: arm64
+      armv6l:
+        archi: armv6
+  file:
+    state: absent
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}
+
 - name: install unit file to systemd
   template:
     src: templates/node_exporter.service.j2

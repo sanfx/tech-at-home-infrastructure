@@ -1,9 +1,9 @@
 ---
 - hosts: localhost
-  gather_facts: false
   vars_files:
     - "{{playbook_dir}}/vars.yml"
     - repo-pass.yml
+
   tasks:
     - name: clone a repo
       tags:
@@ -20,6 +20,19 @@
         msg:
           - "{{config_dir}}"
 
+- hosts: localhost
+  tags: ["never", "laptop"]
+  gather_facts: true
+  become: true
+  become_method: sudo
+  ignore_errors: yes
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: node_exporter
+  
 - hosts: local
   tags: ["never", "local"]
   vars_files:
@@ -29,6 +42,8 @@
     - include_vars: "{{config_dir}}/config.yml"
     - import_role:
         name: node_exporter
+    - import_role:
+        name: pihole
     - import_role:
         name: traefik
     - import_role:
@@ -54,10 +69,6 @@
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   tasks:
-    - include_vars: "{{config_dir}}/config.yml"
-    - import_role:
-        name: node_exporter
-  
     - name: clean this repo.
       file:
         state: absent

@@ -1,5 +1,11 @@
 ---
 
+- name: Verify prometheus config directory exists (on first swarm node)
+  tags: ["monitor"]
+  file:
+    path: "/etc/prometheus"
+    state: directory
+
 - name: Create prometheus yaml config file.
   tags: ["prometheus", "never"]
   when: inventory_hostname == 'rockpi'
