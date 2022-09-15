@@ -13,6 +13,8 @@ services:
         mode: host
     networks:
       - {{traefik_network_name}}
+    environment:
+      - "TZ=Europe/London"
 
 networks:
   {{traefik_network_name}}:
