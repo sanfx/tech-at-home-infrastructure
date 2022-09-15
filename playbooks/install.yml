@@ -26,16 +26,14 @@
     - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
-    - block:
-        - include_vars: "{{config_dir}}/config.yml"
-        - include_vars: "{{config_dir}}/nextcloud.yml"
-        - import_role:
-            name: host-defaults
-        - import_role:
-            name: nextcloud
-      rescue:
-        - set_fact:
-            role_failed: true
+    # - block:
+      - include_vars: "{{config_dir}}/config.yml"
+      - include_vars: "{{config_dir}}/nextcloud.yml"
+      - import_role:
+          name: host-defaults
+      # rescue:
+      #   - set_fact:
+      #       role_failed: true
 
 - hosts: swarm_managers
   vars_files:
@@ -103,15 +101,25 @@
   tasks:
     - include_vars: "{{config_dir}}/config.yml"
     - import_role:
-        name: traefik
+        name: node_exporter
     - import_role:
-        name: dns_stack
+        name: traefik
     - import_role:
         name: monitor
     - import_role:
         name: keepalived
     - import_role:
         name: prometheus
+
+- hosts: low_profile
+  tags: ["never", "low"]
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: node_exporter
 
 - hosts: remote
   tags: ["never", "remote"]
@@ -128,6 +136,10 @@
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: node_exporter
+  
     - name: clean this repo.
       file:
         state: absent
