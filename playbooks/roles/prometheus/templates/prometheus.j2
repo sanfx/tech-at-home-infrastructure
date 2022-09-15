@@ -36,7 +36,7 @@ scrape_configs:
     static_configs: 
       - 
         targets: 
-          - "{{tailscale_rockpi_ip}}:9617"
+          - "pizero:9617"
   - 
     job_name: apache
     scrape_interval: 15s
@@ -50,14 +50,16 @@ scrape_configs:
     static_configs: 
       - 
         targets: 
-          - "{{tailscale_rockpi_ip}}:9100"
-          - "{{low_profile_pizero_ip}}:9100"
+          - "rockpi:9101"
+          - "rockpix:9101"
+          - "pizero:9101"
 
   - 
     file_sd_configs: 
       - 
         files: 
           - /etc/prometheus/targets.yml
+
     job_name: blackbox_exporter
     metrics_path: /probe
     params: 
