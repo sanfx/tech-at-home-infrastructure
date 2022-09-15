@@ -1,14 +1,12 @@
 ---
 - name: Verify stacks/doh directory exists
   tags: ["never", "doh"]
-  when: inventory_hostname == 'proxy'
   file:
     path: "/home/{{ansible_user}}/stacks/doh"
     state: directory
 
 - name: Create docker-compose stack file.
   tags: ["never", "doh"]
-  when: inventory_hostname == 'proxy'
   template:
     src: doh-stack.j2
     dest: /home/{{ansible_user}}/stacks/doh/docker-compose.yml
@@ -16,7 +14,6 @@
 
 - name: Docker compose Service file creation for DNS over HTTPS
   tags: ["never", "doh"]
-  when: inventory_hostname == 'proxy'
   copy:
     dest: /etc/systemd/system/doh-docker-compose.service
     content: |
@@ -35,13 +32,11 @@
 
 - name: forcing systemd to re-execute itself (2.8 and above)
   tags: ["never", "doh"]
-  when: inventory_hostname == 'proxy'
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
   tags: ["never", "doh"]
-  when: inventory_hostname == 'proxy'
   become: yes
   ansible.builtin.systemd:
     name: doh-docker-compose.service
