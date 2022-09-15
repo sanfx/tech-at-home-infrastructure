@@ -1,0 +1,64 @@
+---
+- name: Verify stacks monitor and its data directory exists
+  tags: ["monitor"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/monitor"
+    state: directory
+
+- name: Verify prometheus directory exists (on first swarm node)
+  tags: ["monitor"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/prometheus"
+    state: directory
+
+- name: Verify prometheus directory exists (on first swarm node)
+  tags: ["monitor"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/prometheus/data"
+    state: directory
+    mode: "0777"
+
+- name: Verify prometheus config directory exists (on first swarm node)
+  tags: ["monitor"]
+  file:
+    path: "/etc/prometheus"
+    state: directory
+
+- name: Create docker-compose stack file for cluster monitor(on first swarm node)
+  tags: ["monitor"]
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: cluster-monitoring.j2
+    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/cluster-monitoring-stack.yml
+    mode: 0775
+
+- name: Copy Prometheus rules with owner and permissions
+  tags: ["monitor"]
+  ansible.builtin.copy:
+    src: ./rules
+    dest: /home/{{ansible_user}}/stacks/prometheus
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Create prometheus config file for cluster monitor(on first swarm node)
+  tags: ["monitor", "never"]
+  template:
+    src: prometheus-config.j2
+    dest: /etc/prometheus/prometheus.yml
+
+- name: Create diun yaml config file for cluster monitor(on first swarm node)
+  tags: ["never", "monitor"]
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: diun.j2
+    dest: /home/{{ansible_user}}/stacks/cluster_monitoring/diun.yml
+
+- name: Deploy cluster monitoring stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: cluster_monitoring
+    compose:
+      - /home/{{ansible_user}}/stacks/cluster_monitoring/cluster-monitoring-stack.yml
+  tags: ["monitor"]

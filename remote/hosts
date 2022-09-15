@@ -1,0 +1,7 @@
+[remote]
+proxy:7729
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=ansible
+ansible_ssh_private_key_file=~/ansible/.ssh/id_rsa

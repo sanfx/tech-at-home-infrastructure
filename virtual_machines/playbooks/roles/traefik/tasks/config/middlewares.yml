@@ -1,0 +1,48 @@
+http:
+  middlewares:
+    sonarr-dark:
+      plugin:
+        traefik-themepark:
+          app: sonarr
+          theme: dark
+    pihole-aquamarine:
+      plugin:
+        traefik-themepark:
+          app: pihole
+          theme: dark
+    hsts:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        stsIncludeSubdomains: true
+        forceSTSHeader: true
+        stsPreload: true
+        stsSeconds: 31536000
+        sslRedirect: true
+        customFrameOptionsValue: "SAMEORIGIN"
+        referrerPolicy: "strict-origin"
+        permissionsPolicy: "autoplay=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), microphone=(), midi=(), navigation-override=(self), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(self), clipboard-write=(self), speaker-selection=()"
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+          - PUT
+        accessControlAllowOriginList:
+          - https://access.devilsan.com
+          - https://devilsan.com
+        contentTypeNosniff: true
+        sslForceHost: true
+    redirect:
+      redirectScheme:
+        permanent: true
+        scheme: https
+    scheme:
+      headers:
+        customRequestHeaders:
+          X-Scheme: https
+    stripper:
+      stripPrefix:
+        prefixes:
+          - "/rockpix"
+          - "/rockpi"
+        forceSlash: true

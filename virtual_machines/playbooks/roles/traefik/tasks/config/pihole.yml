@@ -1,0 +1,40 @@
+# As YAML Configuration File
+http:
+  middlewares:
+    add-admin-prefix:
+      addPrefix:
+        prefix: "/admin"
+
+  routers:
+    router-pihole:
+      entrypoints:
+        - "https"
+      service: pihole-pizero-service
+      rule: "Host(`pihole.access.devilsan.com`) || (Host(`pihole.access.devilsan.com`) && PathPrefix(`/pizero`))"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: pihole.access.devilsan.com
+
+      #   stores:
+      #     default:
+      #       defaultCertificate:
+      #         certFile: /certs/server.crt
+      #         keyFile:  /certs/server.key
+        # certificates:
+        #   - certFile: /certs/server.crt
+        #     keyFile: /certs/server.key
+  
+  services:
+    pihole-pizero-service:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://192.168.1.39:80"
+        passHostHeader: true

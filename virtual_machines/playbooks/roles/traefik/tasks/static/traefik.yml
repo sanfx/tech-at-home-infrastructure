@@ -1,0 +1,81 @@
+global:
+  # Send anonymous usage data
+  sendAnonymousUsage: false
+
+metrics:
+  prometheus:
+    addServicesLabels: true
+    addRoutersLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+
+accessLog:
+  filePath: "/var/log/access.log"
+  format: json
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "200"
+      - "300-302"
+    retryAttempts: true
+    minDuration: "10ms"
+
+log:
+  filePath: "/var/log/traefik.log"
+  format: json
+  level: DEBUG
+
+entryPoints:
+  traefik:
+    address: ":8081"
+  web:
+    address: ":80"
+  dns:
+    address: ":53/udp"
+  tcpdns:
+    address: ":53/tcp"
+  https:
+    address: ":443"
+    http:
+      tls: default
+
+api:
+  insecure: true
+  dashboard: true
+
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  file:
+    directory: "/config/"
+    watch: true
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    watch: true
+    swarmMode: false
+    exposedByDefault: false
+
+certificatesResolvers:
+  linodev4:
+    acme:
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      email: niceguysan@gmail.com
+      storage: /letsencrypt/acme-production.json
+      dnsChallenge:
+        provider: linodev4
+
+tls:
+  options:
+    default:
+      sniStrict: true
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256

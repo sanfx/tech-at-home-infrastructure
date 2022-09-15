@@ -1,0 +1,27 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-jenkins:
+      entrypoints:
+        - "https"
+      service: jenkins-service
+      rule: "Host(`jenkins.access.devilsan.com`)"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: jenkins.access.devilsan.com
+
+  services:
+    jenkins-service:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://100.71.28.98:8080"
+          # - url: "http://192.168.1.10:8080"
+        passHostHeader: true

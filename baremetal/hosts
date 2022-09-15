@@ -2,9 +2,6 @@
 rockpi:7729
 rockpix
 
-[remote]
-proxy:7729
-
 [low_profile]
 pizero:2022
 

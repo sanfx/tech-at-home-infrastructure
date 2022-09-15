@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  cloudflared:
+    image: visibilityspots/cloudflared
+    ports:
+      - target: 5054
+        published: 5054
+        mode: host
+        protocol: udp
+      - target: 8080
+        published: 8086
+        mode: host
+    networks:
+      - {{traefik_network_name}}
+
+networks:
+  {{traefik_network_name}}:
+    external: true

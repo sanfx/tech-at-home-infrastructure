@@ -36,30 +36,9 @@
   tags: ["traefik", "never"]
   when: inventory_hostname == 'rockpix'
   template:
-    src: docker-socket-compose.j2
+    src: docker-compose.j2
     dest: /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
     mode: 0775
-
-# - name: Create docker-compose stack file (on first swarm node)
-#   tags: ["traefik"]
-#   template:
-#     src: traefik-stack.j2
-#     dest: /home/{{ansible_user}}/stacks/traefik/traefik-stack.yml
-#     mode: 0775
-
-# - name: Install jsondiff Python library
-#   become: true
-#   become_method: sudo
-#   tags: ["pip3"]
-#   pip:
-#     name: jsondiff
-
-# - name: Install pyyaml Python library
-#   become: true
-#   become_method: sudo
-#   tags: ["pip3"]
-#   pip:
-#     name: pyyaml
 
 - name: create traefik and access log files.
   file:

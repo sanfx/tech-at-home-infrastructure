@@ -1,0 +1,52 @@
+# As YAML Configuration File
+http:
+  routers:
+    router-syncthing-rockpix:
+      entryPoints:
+        - "https"
+      service: syncthing-service-rockpix
+      rule: "Host(`syncthing.access.devilsan.com`) && PathPrefix(`/rockpix`)"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+        - stripper
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: syncthing.access.devilsan.com
+
+    router-syncthing-rockpi:
+      entryPoints:
+        - "https"
+      service: syncthing-service-rockpi
+      rule: "Host(`syncthing.access.devilsan.com`) && PathPrefix(`/rockpi`)"
+      middlewares:
+        - hsts
+        - redirect
+        - scheme
+        - stripper
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: syncthing.access.devilsan.com
+  
+  services:
+    syncthing-service-rockpix:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://192.168.1.11:45860"
+        passHostHeader: true
+
+    syncthing-service-rockpi:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://100.71.28.98:45860"
+        passHostHeader: true
+

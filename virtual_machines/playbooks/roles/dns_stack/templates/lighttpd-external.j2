@@ -1,0 +1,9 @@
+$SERVER["socket"] == ":{{pihole_web_port}}" {
+  # Ensure the Pi-hole Block Page knows that this is not a blocked domain
+  setenv.add-environment = ("fqdn" => "true")
+
+
+  $HTTP["host"] =~ "^pi\.hole" {
+      url.redirect = ("^/(.*)" => "{{pihole_web_protocol}}://{{pihole_app_name}}.{{app_domain_name}}/$1")
+  }
+}

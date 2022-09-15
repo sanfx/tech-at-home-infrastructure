@@ -1,0 +1,45 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+    - repo-pass.yml
+  tasks:
+    - name: clone a repo
+      tags:
+         - always
+         - printa
+      git:
+        repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
+        dest: "{{config_dir}}"
+        depth: 1
+
+    - name: print info
+      tags: ["always", "printa", "config"]
+      debug:
+        msg:
+          - "{{config_dir}}"
+
+- hosts: remote
+  tags: ["never", "remote"]
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    - import_role:
+        name: haproxy
+    
+- hosts: localhost
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  tasks:
+    - name: clean this repo.
+      file:
+        state: absent
+        path: "{{config_dir}}"
+      tags:
+        - always
+        - printa
+        - repo-clean

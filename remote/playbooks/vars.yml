@@ -1,0 +1,3 @@
+app_domain_name: home.local
+config_dir: "{{playbook_dir}}/vault/"
+ansible_python_interpreter: /usr/bin/python3

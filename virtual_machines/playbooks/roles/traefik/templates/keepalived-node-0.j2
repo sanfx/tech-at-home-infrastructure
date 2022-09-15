@@ -1,0 +1,31 @@
+global_defs {
+  router_id backup_node
+  default_interface enp0s8
+  enable_script_security
+  script_user ansible
+}
+
+vrrp_instance swarm-master-0 {
+  interface enp0s8
+
+  state MASTER
+  virtual_router_id 51
+  priority 255
+  nopreempt
+
+  unicast_src_ip 192.168.1.201
+  unicast_peer {
+    192.168.1.200
+  }
+
+  virtual_ipaddress {
+    192.168.1.232
+  }
+
+  authentication {
+    auth_type PASS
+    auth_pass swarm
+  }
+
+  notify "/home/ansible/stacks/keepalived/assets/notify.sh"
+}

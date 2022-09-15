@@ -1,0 +1,62 @@
+---
+- name: Verify stacks directory exists (on first swarm node)
+  tags: ["traefik", "never"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/traefik/"
+    state: directory
+
+- name: Copy traefik static with owner and permissions
+  tags: ["traefik", "config", "never"]
+  ansible.builtin.copy:
+    src: ./static
+    dest: /home/{{ansible_user}}/stacks/traefik/
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Copy traefik dynamic with owner and permissions
+  tags: ["traefik", "config", "never"]
+  ansible.builtin.copy:
+    src: ./config
+    dest: /home/{{ansible_user}}/stacks/traefik/
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: '0644'
+
+- name: Generate admin password hash
+  shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
+  tags: ["traefik", "never"]
+  register: traefikpassword
+
+- name: Create docker-compose stack file (on first swarm node)
+  tags: ["traefik", "never"]
+  template:
+    src: traefik-stack.j2
+    dest: /home/{{ansible_user}}/stacks/traefik/traefik-stack.yml
+    mode: 0775
+
+- name: Install jsondiff Python library
+  become: true
+  become_method: sudo
+  tags: ["pip3", "never"]
+  pip:
+    name: jsondiff
+
+- name: Install pyyaml Python library
+  become: true
+  become_method: sudo
+  tags: ["pip3", "never"]
+  pip:
+    name: pyyaml
+
+- name: create traefik and access log files.
+  file:
+      path: "{{ item }}"
+      state: touch
+  with_items:
+    - "/var/log/traefik.log"
+    - "/var/log/access.log"
+  become: true
+  tags: ["traefik", "never"]
+  become_method: sudo
+  ignore_errors: true

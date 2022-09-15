@@ -1,0 +1,38 @@
+---
+- name: Create custom dns record list for Pihole
+  tags: ["pihole", "config", "never"]
+  template:
+    src: pihole-custom-list.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/custom.list
+    mode: 0775
+
+- name: Docker compose Service file creation for Pihole
+  tags: ["never", "pihole"]
+  copy:
+    dest: /etc/systemd/system/pihole-docker-compose.service
+    content: |
+      [Unit]
+      Description=Docker Compose Service
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/home/{{ansible_user}}/stacks/pihole/
+      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+      ExecStop=/usr/local/bin/docker-compose down
+      [Install]
+      WantedBy=multi-user.target
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["never", "pihole"]
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
+- name: Systemd service activation
+  tags: ["never", "pihole"]
+  become: yes
+  ansible.builtin.systemd:
+    name: pihole-docker-compose.service
+    enabled: yes
+    state: started
