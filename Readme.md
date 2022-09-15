@@ -28,7 +28,7 @@ Here is a list of services running at my Home
 | # 	| Services 	| Type 	| State 	| Node 	| Instances 	| Use 	| Extra 	|
 |---	|---	|:---:	|:---:	|---	|---	|---	|---	|
 | 1 	| Nextcloud 	| HTTPS 	| Active 	| Rockpi/Rockpi X 	| 2 	| Storage, Music Player and Document Editor 	|  	|
-| 2 	| Cloudflared 	| DNS 	| Active 	| Proxy 	| 1 	| Network wide DNS over HTTPS 	|  	|
+| 2 	| Cloudflared 	| DNS 	| Active 	| Proxy/Oracle1 	| 2 	| Network wide DNS over HTTPS 	|  	|
 | 3 	| Pihole 	| DNS 	| Active 	| Pi Zero/Rockpi X 	| 2 	| Netwrok wide Ad blocking 	| Uses cloudflared as Upstream DNS Server 	|
 | 4 	| Grafana 	| HTTPS 	| Active 	| Rockpi 	| 1 	| Service Monitoring 	|  	|
 | 5 	| Prometheus 	| HTTP 	| Active 	| Rockpi 	| 1 	| Event monitoring and alerting 	|  	|
