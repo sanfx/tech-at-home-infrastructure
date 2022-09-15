@@ -1,12 +1,12 @@
 ---
 - name: Check if auto update is enabled
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   stat:
     path: /etc/apt/apt.conf.d/20auto-upgrades
   register: autoupdate
 
 - name: Disable auto update
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   when: autoupdate.stat.exists
   become: true
   become_method: sudo
@@ -24,7 +24,7 @@
 #     - restart systemd-resolved
 
 - name: Register the system release
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   raw: uname -r
   register: linux_revision
   changed_when: no
@@ -32,6 +32,7 @@
   ignore_errors: false
 
 - name: Update nameserver in /etc/resolv.conf
+  when: inventory_hostname in ['vm1', 'vm2', 'vm3']
   lineinfile:
     state: present
     path: /etc/resolv.conf
@@ -39,12 +40,12 @@
     insertbefore: BOF
 
 - name: Remove old packages from the cache
-  tags: ["apt"]
+  tags: ["apt", "never"]
   apt:
     autoclean: yes
 
 - name: Remove dependencies that are no longer needed
-  tags: ["apt"]
+  tags: ["apt", "never"]
   apt:
     autoremove: yes
     purge: yes
@@ -52,21 +53,21 @@
 - name: Install jsondiff Python library
   pip:
     name: jsondiff
-  tags: ["pip"]
+  tags: ["pip", "never"]
 
 - name: Install pyyaml Python library
-  tags: ["pip"]
+  tags: ["pip", "never"]
   pip:
     name: pyyaml
 
 - name: Install fuse if it is absent
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   apt:
     name: fuse
     state: present
 
 - name: Install zip if it is absent
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   apt:
     name: zip
     state: present
@@ -78,7 +79,7 @@
 
 - name: Unarchive a file that is already on the remote machine
   when: not rclone_stat_result.stat.exists
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   ansible.builtin.unarchive:
     src: "https://downloads.rclone.org/{{rclone_version}}/rclone-{{rclone_version}}-{{ansible_system|lower}}-amd64.zip"
     dest: /tmp/
@@ -86,68 +87,68 @@
 
 - name: Move rclone to /usr/local/bin
   when: not rclone_stat_result.stat.exists
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   command: mv /tmp/rclone-{{rclone_version}}-{{ansible_system | lower}}-amd64/rclone /usr/local/bin
 
 - name: Verify mount location exists on {{ansible_hostname}}
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: "/mnt/{{mount_location}}"
     state: directory
 
 - name: Verify mount location data exists on {{ansible_hostname}}
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: "/data"
     state: directory
 
 - name: Verify rclone cache directory exists
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: "/var/rclone"
     state: directory
 
 - name: Create rclone config file on {{ansible_hostname}}.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   template:
     src: rclone_config.j2
     dest: /etc/rclone.conf
 
 - name: Remove rclone-mount service file.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: /etc/systemd/system/rclone-mount.service
     state: absent
   register: service_file
 
 - name: Create rclone systemd rclone service file on {{ansible_hostname}}.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   template:
     src: rclone-mount.j2
     dest: /etc/systemd/system/rclone-mount.service
 
 - name: Remove rclone-mount-data service file.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: /etc/systemd/system/rclone-mount-data.service
     state: abseForce systemd to reloadnt
   register: service_file
 
 - name: Create rclone systemd rclone service file on {{ansible_hostname}}.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   template:
     src: rclone-mount-data.j2
     dest: /etc/systemd/system/rclone-mount-data.service
 
 - name: Remove nextcloud mount service file.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   file:
     path: /etc/systemd/system/nextcloud-mount.service
     state: absent
   register: service_file
 
 - name: Create rclone systemd nextcloud mount service file on {{ansible_hostname}}.
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   template:
     src: nextcloud-mount.j2
     dest: /etc/systemd/system/nextcloud-mount.service
@@ -159,21 +160,21 @@
 #   when: service_file.changed
 
 - name: Enable rclone-mount.service systemd unit {{ansible_hostname}}
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   ansible.builtin.systemd:
     name: rclone-mount.service
     enabled: yes
     state: started
 
 - name: Enable rclone-mount-data systemd service unit {{ansible_hostname}}
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   ansible.builtin.systemd:
     name: rclone-mount-data.service
     enabled: yes
     state: started
 
 - name: Enable nextcloud-mount systemd service unit {{ansible_hostname}}
-  tags: ["rclone"]
+  tags: ["rclone", "never"]
   ansible.builtin.systemd:
     name: nextcloud-mount.service
     enabled: yes

@@ -42,13 +42,13 @@
     mode: '0644'
 
 - name: Create prometheus config file for cluster monitor(on first swarm node)
-  tags: ["monitor"]
+  tags: ["monitor", "never"]
   template:
     src: prometheus-config.j2
     dest: /etc/prometheus/prometheus.yml
 
 - name: Create diun yaml config file for cluster monitor(on first swarm node)
-  tags: ["monitor"]
+  tags: ["never", "monitor"]
   when: inventory_hostname == groups['swarm_managers'][0]
   template:
     src: diun.j2
@@ -72,6 +72,7 @@
 
 - name: Uptime-kuma Service file creation
   tags: ["monitor", "uptime"]
+  when: inventory_hostname == 'rockpix'
   copy:
     dest: /etc/systemd/system/uptime-docker-compose.service
     content: |
@@ -89,11 +90,13 @@
       WantedBy=multi-user.target
 
 - name: forcing systemd to re-execute itself (2.8 and above)
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     daemon_reexec: yes
 
 - name: Systemd service activation
-  tags: ["uptime"]
+  tags: ["uptime", "never"]
+  when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     name: uptime-docker-compose.service
     enabled: yes

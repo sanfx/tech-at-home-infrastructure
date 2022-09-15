@@ -7,6 +7,19 @@
     src: prometheus.j2
     dest: /etc/prometheus/prometheus.yml
 
+- name: Create prometheus systemd service file.
+  tags: ["prometheus", "never"]
+  when: inventory_hostname == 'rockpi'
+  template:
+    src: prometheus.service.j2
+    dest: /lib/systemd/system/prometheus.service
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["prometheus", "never"]
+  when: inventory_hostname == 'rockpi'
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
 - name: Prometheus Systemd service reload
   tags: ["prometheus", "never"]
   when: inventory_hostname == 'rockpi'

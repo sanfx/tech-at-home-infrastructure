@@ -1,12 +1,14 @@
 ---
 - name: Create haproxy yaml config file.
-  tags: ["haproxy"]
+  tags: ["haproxy", "never"]
+  when: inventory_hostname == 'proxy'
   template:
     src: haproxy.j2
     dest: /etc/haproxy/haproxy.cfg
 
 - name: Haproxy Systemd service reload
-  tags: ["haproxy"]
+  tags: ["haproxy", "never"]
+  when: inventory_hostname == 'proxy'
   become: yes
   ansible.builtin.systemd:
     name: haproxy.service
