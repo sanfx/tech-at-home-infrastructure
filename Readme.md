@@ -5,6 +5,22 @@
 
 This repository is infrastructure in code for the micro servers and other IOT devices running at my home and Proxy Server on Linode. I've mostly used Ansible and few parts uses terraform (currently not in main branch).
 
+## Objective
+The inital objective was just to maintain nextcloud and DNS service and nodes infrastructure as code but later I decided to share publically to give a starting point if anyone wants to setup raspberry pi or any other type server based infrastructure at home.
+
+## What's in this repo ?
+This repository contains Vagrantfile to setup ubuntu vm's in VirtualBox running on a Windows 10 in a Mini PC :man_facepalming: , and ansible playbook to deploy services into Docker Swarm setup at Home lab. A windows based machine for server stuff might not be a good choice but for set of specific needs Its working and I found a decent quite and tiny box.
+
+In addition to Window Mini PC, I also have 4 Single board computer nodes out of which 1 is x86 rockpix and rockpi 4B and rockpro64 which are arm64 based. The fourth one is raspberry pi zero which I use for audio alert in-case a server or a critical goes down.
+
+### Why Mini PC?
+Mini PC was added recently and suited my budget as I wanted to spend as little as possible and get a decent one but price would go up as you wish for more. So I picked up Beelink Mini PC that has 8GB RAM and 256GB SSD. Linux one's were hard to find and I didnt wanted to jump into spending time re-installing linux on the mini pc. Beside just learning to use Ansible and Hashicorp Vagrant I also wanted to learn Docker Swarm based infrastructure.
+
+Running Nextcloud is just fine as it is going on Single board computers I mentioned above. So I have two instances of nextcloud in which second one is backup of the main instance.
+
+## Prerequisite 
+* SSH Keys setup -- First step is to create ssh key which will be shared all the nodes that whill give the ansible user access with Sudo privilages. Use add user playbook to add ansibe user with sudo privileges.
+* Knowledge of Ansible -- After the ssh keys are setup we will be using the ssh to connect to server nodes to perform instalation of services and configuring them from your computer.
 
 ### Services 
 Here is a list of services running at my Home
@@ -29,22 +45,6 @@ Here is a list of services running at my Home
 | 16 	| Keepalived 	| ALL 	| Active 	| Rockpi/Rockpi X 	| 2 	| Virtual IP on rockpi and rockpix gives access to duplicate instances of DNS 	|  	|
 | 17 	| Redis 	| TCP 	| Active 	| Rockpi 	| 1 	| Used by Nextcloud 	|  	|
 
-## Objective
-The inital objective was just to maintain nextcloud and DNS service and nodes infrastructure as code but later I decided to share publically to give a starting point if anyone wants to setup raspberry pi or any other type server based infrastructure at home.
-
-## What's in this repo ?
-This repository contains Vagrantfile to setup ubuntu vm's in VirtualBox running on a Windows 10 in a Mini PC :man_facepalming: , and ansible playbook to deploy services into Docker Swarm setup at Home lab. A windows based machine for server stuff might not be a good choice but for set of specific needs Its working and I found a decent quite and tiny box.
-
-In addition to Window Mini PC, I also have 4 Single board computer nodes out of which 1 is x86 rockpix and rockpi 4B and rockpro64 which are arm64 based. The fourth one is raspberry pi zero which I use for audio alert in-case a server or a critical goes down.
-
-### Why Mini PC?
-Mini PC was added recently and suited my budget as I wanted to spend as little as possible and get a decent one but price would go up as you wish for more. So I picked up Beelink Mini PC that has 8GB RAM and 256GB SSD. Linux one's were hard to find and I didnt wanted to jump into spending time re-installing linux on the mini pc. Beside just learning to use Ansible and Hashicorp Vagrant I also wanted to learn Docker Swarm based infrastructure.
-
-Running Nextcloud is just fine as it is going on Single board computers I mentioned above. So I have two instances of nextcloud in which second one is backup of the main instance.
-
-## Prerequisite 
-* SSH Keys setup -- First step is to create ssh key which will be shared all the nodes that whill give the ansible user access with Sudo privilages. Use add user playbook to add ansibe user with sudo privileges.
-* Knowledge of Ansible -- After the ssh keys are setup we will be using the ssh to connect to server nodes to perform instalation of services and configuring them from your computer.
 
 ## Usage
 
