@@ -1,5 +1,6 @@
 [remote]
 proxy:7729
+oracle1
 
 [all:vars]
 ansible_connection=ssh
