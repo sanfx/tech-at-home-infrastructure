@@ -1,4 +1,6 @@
 ---
+- import_tasks: cadvisor.yml
+
 - name: Verify stacks/uptime-kuma and its data directory exists
   tags: ["monitor", "uptime", "never"]
   file:
@@ -57,8 +59,7 @@
     dest: /home/{{ansible_user}}/stacks/monitor/exporter/docker-compose.yml
     mode: 0775
 
-
-- name: Dockered and Cadvisor Exporter Systemd Service file creation
+- name: Dockered Exporter Systemd Service file creation
   tags:  ["monitor", "exporter", "dockered", "never"]
   copy:
     dest: /etc/systemd/system/exporter-docker-compose.service

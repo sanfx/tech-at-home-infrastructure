@@ -1,0 +1,47 @@
+---
+  - name: download cadvisor exporter
+    tags: ["cadvisor", "never"]
+    vars:
+      node_hosts:
+        x86_64:
+          archi: amd64
+        aarch64:
+          archi: arm64
+        armv6l:
+          archi: armv6
+    shell: curl -sL https://github.com/google/cadvisor/releases/download/v{{cadvisor_version}}/cadvisor-v{{cadvisor_version}}-linux-{{node_hosts[ansible_architecture]['archi']}} -o /usr/local/bin/cadvisor
+
+  - name: Give insecure permissions to an existing file
+    tags: ["cadvisor", "never"]
+    ansible.builtin.file:
+      path: /usr/local/bin/cadvisor
+      owner: root
+      group: root
+      mode: '0766'
+
+  - name: Docker compose Service file creation for cadvisor
+    tags: ["never", "cadvisor"]
+    copy:
+      dest: /etc/systemd/system/cadvisor-docker-compose.service
+      content: |
+        [Unit]
+        Description=Docker Compose Service
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        User=root
+        Group=root
+        Type=oneshot
+        RemainAfterExit=true
+        WorkingDirectory=/home/{{ansible_user}}/stacks/monitor/exporter/
+        ExecStart=/usr/local/bin/cadvisor
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: configure systemd to use service
+    tags: ["cadvisor", "never"]
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      state: started
+      name: cadvisor-docker-compose.service
