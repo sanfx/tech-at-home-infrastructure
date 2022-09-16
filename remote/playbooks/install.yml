@@ -49,6 +49,8 @@
         name: haproxy
     - import_role:
         name: doh
+    - import_role:
+        name: node_exporter
     
 - hosts: localhost
   gather_facts: false
