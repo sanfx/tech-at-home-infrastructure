@@ -1,14 +1,12 @@
 # IT and IOT lab at Home Infrastructure
 
 
-### Summary
+### Introduction 🖋️
 
 This repository is infrastructure in code for the micro servers and other IOT devices running at my home and Proxy Server on Linode. I've mostly used Ansible and few parts uses terraform (currently not in main branch).
 
-## Objective
 The inital objective was just to maintain nextcloud and DNS service and nodes infrastructure as code but later I decided to share publically to give a starting point if anyone wants to setup raspberry pi or any other type server based infrastructure at home.
 
-## What's in this repo ?
 This repository contains Vagrantfile to setup ubuntu vm's in VirtualBox running on a Windows 10 in a Mini PC :man_facepalming: , and ansible playbook to deploy services into Docker Swarm setup at Home lab. A windows based machine for server stuff might not be a good choice but for set of specific needs Its working and I found a decent quite and tiny box.
 
 In addition to Window Mini PC, I also have 4 Single board computer nodes out of which 1 is x86 rockpix and rockpi 4B and rockpro64 which are arm64 based. The fourth one is raspberry pi zero which I use for audio alert in-case a server or a critical goes down.
@@ -18,12 +16,97 @@ Mini PC was added recently and suited my budget as I wanted to spend as little a
 
 Running Nextcloud is just fine as it is going on Single board computers I mentioned above. So I have two instances of nextcloud in which second one is backup of the main instance.
 
+## Table of contents 📋
+See below the top level parts of this README:
+
++ [Requirements](#requirements)
++ [Structure](#structure)
++ [Setup PreRequisite](#prerequisite)
++ [Services](#services)
++ [Usage](#usage)
+
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
+
+## Requirements 🧰
+Only [Docker](https://docs.docker.com/get-docker/) and [Compose](https://docs.docker.com/compose/) are required to deploy the stack, the following versions are the minimal requirements:
+
+| Tool          | Version |
+|:-------------:|:-------:|
+| Docker        | 20      |
+| Compose       | 1.29    |
+| Ansible       | 2.10.8  |
+
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
+
 ## Prerequisite 
 * SSH Keys setup -- First step is to create ssh key which will be shared all the nodes that whill give the ansible user access with Sudo privilages. Use add user playbook to add ansibe user with sudo privileges.
 * Knowledge of Ansible -- After the ssh keys are setup we will be using the ssh to connect to server nodes to perform instalation of services and configuring them from your computer.
 
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
+
+## Structure 
+The ansible playbooks containes roles and in the roles directory has role which are basically services that gets deployed on the host that falls in specific category. Now, I have 4 types of hosts.
+
+1. Three Single board Computers located and referred to as `local` 
+    A. Rockpi 4A (arm64)
+    B. Rockpi X  (x86)
+    C. Raspberry pi 0 (armv6)
+2. Remote Instances located and referred to as `remote`
+    A. Linode Nano G1 (x86)
+    B. Oracle  (arm64)
+3. Virtual Machines loacted locally and referred to as `vms` running on Beelink Mini PC used for testing or heavy duty apps. I use docker swarm on vms.
+
+
+```bash
+├── baremetal
+│   ├── hosts
+│   └── playbooks
+│       ├── install.yml
+│       └── roles
+├── remote
+│   ├── hosts
+│   └── playbooks
+│       ├── install.yml
+│       └── roles
+│
+└── virtual_machines
+    ├── bootstrap_ansible.sh
+    ├── hosts
+    └── playbooks
+        ├── install.yml
+        └── roles
+
+```
+See usage below how I run when I want to deploy to a specific target. Each of the target type contains hosts file that contains list of hosts and `playbooks/install.yml` runs all the roles deploying services and updating configurations on the targetted nodes.
+
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
+
+## Usage
+### For docker swarm nodes only.
+
+    ```bash
+    ansible-playbook playooks/install.yml
+    ```
+
+> If you want to run on the remote services.
+
+```bash
+$ ansible-playbook -i remote/hosts --vault-password-file ~/paswd remote/playbooks/install.yml --tags "remote" --skip-tags "haproxy"
+```
+In the above command line, I am running the playbook on remote hosts but skipping the tasks with haproxy tag.
+
+> If you want to run on the nodes locally.
+
+```bash
+$ ansible-playbook -i local/hosts --vault-password-file ~/paswd local/playbooks/install.yml --tags "local"
+```
+
+
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
+
 ### Services 
-Here is a list of services running at my Home
+
+Here is a list of services you can deploy on your servers at home. I am running these services at my Home some single and some are multi instance and loadbalanced.
 
 | # 	| Services 	| Type 	| State 	| Node 	| Instances 	| Use 	| Extra 	|
 |---	|---	|:---:	|:---:	|---	|---	|---	|---	|
@@ -46,26 +129,6 @@ Here is a list of services running at my Home
 | 17 	| Redis 	| TCP 	| Active 	| Rockpi 	| 1 	| Used by Nextcloud 	|  	|
 
 
-## Usage
-
-### For docker swarm nodes only.
-
-```bash
-ansible-playbook playooks/install.yml
-```
-If you want to run on the remote services.
-
-```bash
-$ ansible-playbook -i remote/hosts --vault-password-file ~/paswd remote/playbooks/install.yml --tags "remote" --skip-tags "haproxy"
-```
-In the above command line, I am running the playbook on remote hosts but skipping the tasks with haproxy tag.
-
-If you want to run on the baremetal nodes locally.
-
-```bash
-$ ansible-playbook -i remote/hosts --vault-password-file ~/paswd remote/playbooks/install.yml --tags "local"
-```
-
 ## How to
 If you want to use this repo as starting point, you would have to setup ssh keys, update the hosts file to match nodes at your premises. The ansbile playbook has variables declared in the config.yml that lives in private repository on github.com vault. 
 
@@ -73,7 +136,7 @@ Secondly, this repository also contains playbook/repo-pass.yml which I have encr
 
 What you would need is to list all the variables and either store locally your own config.yaml in the `{{playbook_dir}}/vault` or create a vault git repo and update it in install.yaml playbook.
 
-
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
 ## Nextcloud Setup (Since 2020)
 
 I have two instances of Nextcloud running locally. The primary instance of nextcloud runs on the node facing the internet through a remote proxy on linode.
@@ -86,6 +149,7 @@ and requiring efforts. So for the time being single node mariadb instance is fin
 
 The data is being kept redundent on both of these nodes. Both the local nodes are connected to 1TB storage and both the nodes are kept in sync. For keeping the data in sync I am using Syncthing.
 
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
 
 This was the original setup of Nextcloud however with the passing of time it has reduced to single redis and single instance of mariadb.
 
@@ -97,6 +161,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 As I would expect the first place for you to start would be to change the `hosts` file. i.e. changing IP's or adding new hosts to the list I have defined. The nodes IP under `[local]` are the single board computers I have locally.
 
+[![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
 
 ## License
 [MIT](https://github.com/sanfx/docker-swarm-infrastructure/blob/main/LICENSE)
