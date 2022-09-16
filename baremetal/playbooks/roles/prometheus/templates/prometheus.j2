@@ -36,7 +36,7 @@ scrape_configs:
     static_configs: 
       - 
         targets: 
-          - "pizero:9617"
+          - "rockpix:9617"
   - 
     job_name: apache
     scrape_interval: 15s
@@ -54,6 +54,8 @@ scrape_configs:
           - "rockpix:9101"
           - "pizero:9101"
           - "infinity:9101"
+          - "proxy:9101"
+          - "oracle:9101"
 
   - 
     file_sd_configs: 
