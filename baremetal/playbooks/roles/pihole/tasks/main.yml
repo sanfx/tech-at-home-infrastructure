@@ -7,6 +7,14 @@
     dest: /home/{{ansible_user}}/stacks/pihole/custom.list
     mode: 0775
 
+- name: Create custom dns record list for Pihole
+  tags: ["pihole", "config", "never"]
+  when: inventory_hostname == 'rockpix'
+  template:
+    src: pihole-stack.j2
+    dest: /home/{{ansible_user}}/stacks/pihole/docker-compose.yml
+    mode: 0775
+
 - name: Docker compose Service file creation for Pihole
   tags: ["never", "pihole"]
   when: inventory_hostname == 'rockpix'
