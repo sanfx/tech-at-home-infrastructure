@@ -1,0 +1,33 @@
+version: '3.7'
+
+networks:
+  {{traefik_network_name}}:
+    external: true
+
+services:
+  dockerd-exporter:
+    image:  stefanprodan/dockerd-exporter:latest
+    networks:
+      - {{traefik_network_name}}
+    environment:
+      - DOCKER_GWBRIDGE_IP=172.18.0.1
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 128M
+
+  cadvisor:
+    image: google/cadvisor
+    networks:
+      - {{traefik_network_name}}
+    command: -logtostderr -docker_only
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 128M
+
+
