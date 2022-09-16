@@ -1,34 +1,25 @@
 ---
 - name: Verify stacks/uptime-kuma and its data directory exists
-  tags: ["monitor", "uptime"]
+  tags: ["monitor", "uptime", "never"]
   file:
     path: "/home/{{ansible_user}}/stacks/monitor/uptime-kuma/data"
     state: directory
 
-- name: Copy Prometheus rules with owner and permissions
-  tags: ["monitor"]
-  ansible.builtin.copy:
-    src: ./rules
-    dest: /home/{{ansible_user}}/stacks/prometheus
-    owner: "{{ansible_user}}"
-    group: "{{ansible_user}}"
-    mode: '0644'
-
-- name: Create prometheus config file for cluster monitor(on first swarm node)
-  tags: ["monitor", "never"]
-  template:
-    src: prometheus-config.j2
-    dest: /etc/prometheus/prometheus.yml
+- name: Verify stacks/monitor/dockered exporter directory exists
+  tags: ["monitor", "exporter", "never"]
+  file:
+    path: "/home/{{ansible_user}}/stacks/monitor/exporter"
+    state: directory
 
 - name: Create docker-compose stack file.
-  tags: ["monitor", "uptime"]
+  tags: ["monitor", "uptime", "never"]
   template:
     src: uptime-kuma.j2
     dest: /home/{{ansible_user}}/stacks/monitor/uptime-kuma/docker-compose.yml
     mode: 0775
 
 - name: Uptime-kuma Service file creation
-  tags: ["monitor", "uptime"]
+  tags: ["monitor", "uptime", "never"]
   when: inventory_hostname == 'rockpix'
   copy:
     dest: /etc/systemd/system/uptime-docker-compose.service
@@ -56,5 +47,43 @@
   when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     name: uptime-docker-compose.service
+    enabled: yes
+    state: started
+
+- name: Create prometheus config file for cluster monitor(on first swarm node)
+  tags: ["monitor", "exporter", "dockered", "never"]
+  template:
+    src: monitoring.j2
+    dest: /home/{{ansible_user}}/stacks/monitor/exporter/docker-compose.yml
+    mode: 0775
+
+
+- name: Dockered and Cadvisor Exporter Systemd Service file creation
+  tags:  ["monitor", "exporter", "dockered", "never"]
+  copy:
+    dest: /etc/systemd/system/exporter-docker-compose.service
+    content: |
+      [Unit]
+      Description=Docker Compose Service for Dockered and CAdvisor.
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/home/{{ansible_user}}/stacks/monitor/exporter
+      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+      ExecStop=/usr/local/bin/docker-compose down
+      [Install]
+      WantedBy=multi-user.target
+
+- name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["monitor", "exporter", "never"]
+  ansible.builtin.systemd:
+    daemon_reexec: yes
+
+- name: exporter-docker-compose Systemd service activation
+  tags: ["monitor", "exporter", "dockered", "never"]
+  ansible.builtin.systemd:
+    name: exporter-docker-compose.service
     enabled: yes
     state: started
