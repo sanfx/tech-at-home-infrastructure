@@ -52,7 +52,7 @@
     daemon_reexec: yes
 
 - name: Systemd service activation
-  tags: ["uptime", "never"]
+  tags: ["monitor", "uptime", "never"]
   when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     name: uptime-docker-compose.service
