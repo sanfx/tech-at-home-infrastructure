@@ -40,6 +40,36 @@
   become: yes
   tasks:
     - include_vars: "{{config_dir}}/config.yml"
+
+    - name: Install Docker Python library
+      pip:
+        name: docker
+        version: 5.0.3
+        state: present
+      tags: ["docker", pip]
+
+    - name: Install jsondiff Python library
+      tags: ["pip"]
+      pip:
+        name: jsondiff
+
+    - name: find  docker networks exists or not.
+      shell: echo $(docker network ls | grep "{{traefik_network_name}}" | awk '{print $2}')
+      register: echo_content
+
+    - name: print info
+      tags: ["always", "printa", "config"]
+      when: echo_content.stdout == ""
+      debug:
+        msg:
+          - "{{echo_content.stdout}}"
+
+    - name: Create a network {{traefik_network_name}}, if it doesn't exists.
+      when: echo_content.stdout != 'web'
+      docker_network:
+        name: "{{traefik_network_name}}"
+        attachable: yes
+
     - import_role:
         name: node_exporter
     - import_role:
