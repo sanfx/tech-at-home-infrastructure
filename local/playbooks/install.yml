@@ -8,17 +8,11 @@
     - name: clone a repo
       tags:
          - always
-         - printa
+         - print
       git:
         repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
         dest: "{{config_dir}}"
         depth: 1
-
-    - name: print info
-      tags: ["always", "printa", "config"]
-      debug:
-        msg:
-          - "{{config_dir}}"
 
 - hosts: localhost
   tags: ["never", "laptop"]

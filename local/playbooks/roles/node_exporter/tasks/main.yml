@@ -1,78 +1,61 @@
 ---
-- name: download node exporter
-  tags: ["node_exporter"]
-  vars:
-    node_hosts:
-      x86_64:
-        archi: amd64
-      aarch64:
-        archi: arm64
-      armv6l:
-        archi: armv6
-  get_url:
-    url: https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}.tar.gz
-    dest: /tmp
+- name: node_exporter block
+  tags: ["node_exporter", "never"]
+  block:
+    - include_vars: "{{config_dir}}/config.yml"
 
-- name: unarchive node exporter
-  tags: ["node_exporter"]
-  vars:
-    node_hosts:
-      x86_64:
-        archi: amd64
-      aarch64:
-        archi: arm64
-      armv6l:
-        archi: armv6
-  unarchive:
-    remote_src: yes
-    src: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}.tar.gz
-    dest: /tmp
+    - name: define node_hosts
+      set_fact:
+        node_hosts:
+          x86_64:
+            archi: amd64
+          aarch64:
+            archi: arm64
+          armv6l:
+            archi: armv6
 
-- name: move node exporter to /usr/local/bin
-  tags: ["node_exporter"]
-  vars:
-    node_hosts:
-      x86_64:
-        archi: amd64
-      aarch64:
-        archi: arm64
-      armv6l:
-        archi: armv6
-  copy:
-    src: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}/node_exporter
-    dest: /usr/local/bin/node_exporter
-    remote_src: yes
-    owner: root
-    group: root
-    mode: 0755
+    - name: download node exporter
+      tags: ["node_exporter", "never"]
+      get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}.tar.gz
+        dest: /tmp
 
-- name: remove repo.
-  tags: ["node_exporter"]
-  vars:
-    node_hosts:
-      x86_64:
-        archi: amd64
-      aarch64:
-        archi: arm64
-      armv6l:
-        archi: armv6
-  file:
-    state: absent
-    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}
+    - name: unarchive node exporter
+      tags: ["node_exporter", "never"]
+      unarchive:
+        remote_src: yes
+        src: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}.tar.gz
+        dest: /tmp
 
-- name: install unit file to systemd
-  tags: ["node_exporter"]
-  template:
-    src: templates/node_exporter.service.j2
-    dest: /etc/systemd/system/node_exporter.service
-    owner: root
-    group: root
-    mode: 0600
+    - name: move node exporter to /usr/local/bin
+      tags: ["node_exporter", "never"]
+      copy:
+        src: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}/node_exporter
+        dest: /usr/local/bin/node_exporter
+        remote_src: yes
+        owner: root
+        group: root
+        mode: 0755
 
-- name: configure systemd to use service
-  tags: ["node_exporter"]
-  systemd:
-    daemon_reload: yes
-    enabled: yes
-    state: started
-    name: node_exporter.service
+    - name: remove node_exporter from /tmp download location.
+      tags: ["node_exporter", "never"]
+      file:
+        state: absent
+        path: /tmp/node_exporter-{{ node_exporter_version }}.linux-{{node_hosts[ansible_architecture]['archi']}}
+
+    - name: install unit file to systemd
+      tags: ["node_exporter", "never"]
+      template:
+        src: templates/node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: configure systemd to use service
+      tags: ["node_exporter", "never"]
+      systemd:
+        daemon_reload: yes
+        enabled: yes
+        state: started
+        name: node_exporter.service
