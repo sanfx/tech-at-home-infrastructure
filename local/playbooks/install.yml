@@ -80,15 +80,26 @@
 
 - hosts: low_profile
   tags: ["never", "low"]
+  gather_facts: false
   vars_files:
     - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
+    - import_role:
+        name: notify
+  
     - include_vars: "{{config_dir}}/config.yml"
     - import_role:
         name: node_exporter
+  
     - import_role:
         name: alert
+
+    - name: Turning off Led on Raspberry pi
+      tags: ["led", "never"]
+      shell: /usr/bin/python3 /home/ansible/stacks/notify/turn_on_led/script/turn_led_off
+      when: inventory_hostname == 'pizero'
+
     
 - hosts: localhost
   gather_facts: false
