@@ -1,0 +1,29 @@
+---
+  - name: clone beep git repository.
+    tags: ["beep", "never"]
+    when: inventory_hostname == 'pizero'
+    git:
+      repo: "https://github.com/sanfx/beep.git"
+      dest: /home/{{ansible_user}}/stacks/alert/beep
+      depth: 1
+
+  - name: install systemd service unit
+    tags: ["beep", "never"]
+    when: inventory_hostname == 'pizero'
+    copy:
+      src: /home/{{ansible_user}}/stacks/alert/beep/systemd/
+      dest: /etc/systemd/
+      remote_src: yes
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Start beeper service
+    tags: ["beep", "never"]
+    when: inventory_hostname == 'pizero'
+    systemd:
+      name: check_state_to_beep.service
+      state: started
+      enabled: yes
+    become: yes
+    become_user: root

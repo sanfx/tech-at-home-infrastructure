@@ -48,11 +48,12 @@
         name: jsondiff
 
     - name: find  docker networks exists or not.
+      tags: ["printa", "config"]
       shell: echo $(docker network ls | grep "{{traefik_network_name}}" | awk '{print $2}')
       register: echo_content
 
-    - name: print info
-      tags: ["always", "printa", "config"]
+    - name: print result
+      tags: ["printa", "config"]
       when: echo_content.stdout == ""
       debug:
         msg:
@@ -86,6 +87,8 @@
     - include_vars: "{{config_dir}}/config.yml"
     - import_role:
         name: node_exporter
+    - import_role:
+        name: alert
     
 - hosts: localhost
   gather_facts: false
