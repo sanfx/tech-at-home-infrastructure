@@ -1,0 +1,20 @@
+---
+
+  - name: check if turn_on_led repository exists.
+    tags: ["led", "never"]
+    stat:
+      path: /home/{{ansible_user}}/stacks/notify/turn_on_led/script
+    register: repository
+
+  - name: clone turn_on_led git repository.
+    tags: ["led", "never"]
+    when: not (repository.stat.exists and repository.stat.isdir) and inventory_hostname == 'pizero'
+    git:
+      repo: "https://github.com/sanfx/turn_on_led.git"
+      dest: /home/{{ansible_user}}/stacks/notify/turn_on_led
+      depth: 1
+
+  - name: Turning on Led on Raspberry pi
+    tags: ["led", "never"]
+    shell: /usr/bin/python3 /home/ansible/stacks/notify/turn_on_led/script/turn_led_on
+    when: inventory_hostname == 'pizero'
