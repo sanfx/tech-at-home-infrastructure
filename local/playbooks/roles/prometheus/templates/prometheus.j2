@@ -73,27 +73,20 @@ scrape_configs:
           - "proxy:9101"
           - "oracle:9101"
 
-  - 
-    file_sd_configs: 
-      - 
-        files: 
-          - /etc/prometheus/targets.yml
-
-    job_name: blackbox_exporter
+  - job_name: 'blackbox'
     metrics_path: /probe
-    params: 
-      module: 
-        - http_2xx
-    relabel_configs: 
-      - 
-        source_labels: 
-          - __address__
+    params:
+      module: [http_2xx]  # Look for a HTTP 200 response.
+
+    static_configs:
+      - targets:
+        - https://devilsan.com   # Target to probe with http.
+        - https://devilsan.com/nextcloud   # Target to probe with https.
+
+    relabel_configs:
+      - source_labels: [__address__]
         target_label: __param_target
-      - 
-        source_labels: 
-          - __param_target
+      - source_labels: [__param_target]
         target_label: instance
-      - 
-        replacement: "{{tailscale_proxy_ip}}:9115"
-        target_label: __address__
-    scheme: http
+      - target_label: __address__
+        replacement: proxy:9115  # The blackbox exporter's real hostname:port.
