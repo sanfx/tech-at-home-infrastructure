@@ -1,7 +1,13 @@
 ---
+  - name: check beep repository exists locally.
+    tags: ["beep", "never"]
+    stat:
+      path: /home/{{ansible_user}}/stacks/alert/beep/script
+    register: repository
+
   - name: clone beep git repository.
     tags: ["beep", "never"]
-    when: inventory_hostname == 'pizero'
+    when: not (repository.stat.exists and repository.stat.isdir) and inventory_hostname == 'pizero'
     git:
       repo: "https://github.com/sanfx/beep.git"
       dest: /home/{{ansible_user}}/stacks/alert/beep
