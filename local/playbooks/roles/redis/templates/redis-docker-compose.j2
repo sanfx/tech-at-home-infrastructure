@@ -1,0 +1,29 @@
+version: "3.6"
+
+services:
+  redis:
+    command:
+      - redis-server
+    container_name: redis
+    image: redis:6.0.9
+    ipc: private
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+    networks:
+      - {{traefik_network_name}}
+    ports:
+      - 7001:6379/tcp
+    restart: unless-stopped
+    volumes:
+      - 9f2a2d5304d932fe6acd8207848d21412f8604e8f06a0ce52da7a9719488cd8f:/data
+    working_dir: /data
+
+volumes:
+  9f2a2d5304d932fe6acd8207848d21412f8604e8f06a0ce52da7a9719488cd8f:
+    external: true
+
+networks:
+  {{traefik_network_name}}:
+    external: true

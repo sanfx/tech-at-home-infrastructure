@@ -1,0 +1,48 @@
+---
+  - name: Verify redis directory exists
+    tags: ["redis", "never"]
+    file:
+      path: "/home/{{ansible_user}}/stacks/redis/data"
+      state: directory
+
+  - name: copy docker compose for Redis
+    tags: ["redis", "never"]
+    when: inventory_hostname == 'rockpi'
+    template:
+      src: redis-docker-compose.j2
+      dest: /home/{{ansible_user}}/stacks/redis/docker-compose.yml
+      mode: 0775
+
+  - name: Docker compose Service file creation for Redis
+    tags: ["never", "redis"]
+    when: inventory_hostname == 'rockpi'
+    copy:
+      dest: /etc/systemd/system/redis-docker-compose.service
+      content: |
+        [Unit]
+        Description=Docker Compose Service
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        WorkingDirectory=/home/{{ansible_user}}/stacks/redis/
+        ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+        ExecStop=/usr/local/bin/docker-compose down
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: forcing systemd to re-execute itself (2.8 and above)
+    tags: ["never", "redis"]
+    when: inventory_hostname == 'rockpi'
+    ansible.builtin.systemd:
+      daemon_reexec: yes
+
+  - name: Systemd service activation
+    tags: ["never", "redis"]
+    when: inventory_hostname == 'rockpi'
+    become: yes
+    ansible.builtin.systemd:
+      name: redis-docker-compose.service
+      enabled: yes
+      state: started

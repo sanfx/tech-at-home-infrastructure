@@ -77,6 +77,8 @@
         name: keepalived
     - import_role:
         name: prometheus
+    - import_role:
+        name: redis
 
 - hosts: low_profile
   tags: ["never", "low"]
