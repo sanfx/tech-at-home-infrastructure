@@ -1,7 +1,11 @@
 ---
 - name: Check if Swarm has already been initialized
-  shell: docker node ls
-  tags: ["docker"]
+  shell: |
+      if [ "$(docker info | grep Swarm | sed 's/Swarm: //g')" == "inactive" ]; then
+        exit 1;
+      else
+        echo true;
+      fi
   register: swarm_status
   ignore_errors: true
 
