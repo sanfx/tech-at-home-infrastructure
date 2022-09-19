@@ -64,7 +64,8 @@
       docker_network:
         name: "{{traefik_network_name}}"
         attachable: yes
-
+    - import_role:
+        name: authelia
     - import_role:
         name: node_exporter
     - import_role:

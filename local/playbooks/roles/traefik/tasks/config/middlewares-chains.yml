@@ -1,0 +1,11 @@
+http:
+  middlewares:
+
+    chain-authelia:
+      chain:
+        middlewares:
+          - rate-limit
+          - redirect
+          - hsts
+          - authelia
+          - compress

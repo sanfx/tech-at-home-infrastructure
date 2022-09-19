@@ -1,0 +1,81 @@
+---
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+
+server:
+  host: 0.0.0.0
+  port: {{authelia_web_port}}
+log:
+  level: debug
+theme: dark
+# This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE
+jwt_secret: {{pihole_api_token}}
+default_redirection_url: https://{{authelia_app_name}}.{{website_tld}}
+totp:
+  issuer: authelia.com
+
+duo_api:
+  hostname: api-7ffbe1f3.duosecurity.com
+  integration_key: DI0288X7HNC5BAJGX20S
+  # This secret can also be set using the env variables AUTHELIA_DUO_API_SECRET_KEY_FILE
+  secret_key: 9GMeeDNwghNDSfv8YxSc86nyaz7YK1HuswE7Lpmi
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 64
+      
+access_control:
+  default_policy: deny
+  rules:
+    # Rules applied to everyone
+    - domain: {{pihole_app_name}}.{{app_domain_name}}
+      policy: bypass
+    - domain: {{uptime_kuma_app_name}}.access.{{website_tld}}
+      policy: one_factor
+    - domain: {{grafana_app_name}}.access.{{website_tld}}
+      policy: two_factor
+    - domain: syncthing.access.{{website_tld}}
+      policy: one_factor
+
+session:
+  name: authelia_session
+  # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE
+  secret: unsecure_session_secret
+  expiration: 3600  # 1 hour
+  inactivity: 300  # 5 minutes
+  domain: {{website_tld}}  # Should match whatever your root protected domain is
+
+  # redis:
+  #  host: 100.71.28.98
+  #  port: {{redis_port}}
+  #   # This secret can also be set using the env variables AUTHELIA_SESSION_REDIS_PASSWORD_FILE
+  #   # password: authelia
+
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+storage:
+  encryption_key: a_very_important_secret # Now required
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  # smtp:
+  #   username: test
+  #   # This secret can also be set using the env variables AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE
+  #   password: password
+  #   host: mail.example.com
+  #   port: 25
+  #   sender: admin@example.com
+  filesystem:
+    filename: /config/notification.txt
+...

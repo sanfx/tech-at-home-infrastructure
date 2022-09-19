@@ -7,9 +7,7 @@ http:
       service: grafana-service
       rule: "Host(`grafana.access.devilsan.com`)"
       middlewares:
-        - hsts
-        - redirect
-        - scheme
+        - chain-authelia
       tls:
         certResolver: linodev4
         domains:

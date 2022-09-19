@@ -127,6 +127,9 @@ Here is a list of services you can deploy on your servers at home. I am running 
 | 15 	| DNSMasq 	| DNS 	| Active 	| Rockpi 	| 1 	| DNS Service in case all instances of pihole is down. 	| Uses cloudflared as Upstream DNS Server 	|
 | 16 	| Keepalived 	| ALL 	| Active 	| Rockpi/Rockpi X 	| 2 	| Virtual IP on rockpi and rockpix gives access to duplicate instances of DNS 	|  	|
 | 17 	| Redis 	| TCP 	| Active 	| Rockpi 	| 1 	| Used by Nextcloud 	|  	|
+| 18    | Authelia  | HTTP  | Active    | Rockpi    | 1     | Used by Syncthing,Grafana,Uptime Kuma| Single Sign On |
+| 19    | CAdvisor  | TCP   | Active    | Rockpi/RockpiX | 1| Used to get docker metrics |  |
+| 20    | Redis     | TCP   | Active    | Rockpi    | 2     | Used by Nextcloud          |  |
 
 
 ## How to

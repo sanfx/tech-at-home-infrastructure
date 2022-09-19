@@ -1,0 +1,66 @@
+---
+  - name: check authelia/config directory exists locally.
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    file:
+      path: "/home/{{ansible_user}}/stacks/authelia/config"
+      state: directory
+
+  - name: Copy authelia users database.
+    tags: ["authelia", "config", "never"]
+    when: inventory_hostname == 'rockpix'
+    ansible.builtin.copy:
+      src: ./config
+      dest: /home/{{ansible_user}}/stacks/authelia/
+      owner: "{{ansible_user}}"
+      group: "{{ansible_user}}"
+      mode: '0644'
+
+  - name: Create docker-compose stack file for Authelia.
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    template:
+      src: configuration.yml.j2
+      dest: /home/{{ansible_user}}/stacks/authelia/config/configuration.yml
+      mode: 0775
+
+  - name: Create docker-compose stack file for Authelia.
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    template:
+      src: authelia-docker-compose.j2
+      dest: /home/{{ansible_user}}/stacks/authelia/docker-compose.yml
+      mode: 0775
+
+  - name: Authelia docker compose Service file creation
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    copy:
+      dest: /etc/systemd/system/authelia-docker-compose.service
+      content: |
+        [Unit]
+        Description=Docker Compose Service for Authelia
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        WorkingDirectory=/home/{{ansible_user}}/stacks/authelia/
+        ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+        ExecStop=/usr/local/bin/docker-compose down
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: forcing systemd to re-execute itself (2.8 and above)
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    ansible.builtin.systemd:
+      daemon_reexec: yes
+
+  - name: Systemd service activation
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    ansible.builtin.systemd:
+      name: authelia-docker-compose
+      enabled: yes
+      state: started

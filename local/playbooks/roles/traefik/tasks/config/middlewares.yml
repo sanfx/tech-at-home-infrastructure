@@ -1,5 +1,22 @@
 http:
   middlewares:
+
+    authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd=https://auth.access.devilsan.com"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+
+    compress:
+      compress: {}
+
     sonarr-dark:
       plugin:
         traefik-themepark:
@@ -16,11 +33,14 @@ http:
         browserXssFilter: true
         stsIncludeSubdomains: true
         forceSTSHeader: true
+        accessControlMaxAge: 100
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
         stsPreload: true
-        stsSeconds: 31536000
+        stsSeconds: 63072000
         sslRedirect: true
         customFrameOptionsValue: "SAMEORIGIN"
-        referrerPolicy: "strict-origin"
+        referrerPolicy: "same-origin"
         permissionsPolicy: "autoplay=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), microphone=(), midi=(), navigation-override=(self), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(self), clipboard-write=(self), speaker-selection=()"
         accessControlAllowMethods:
           - GET
@@ -32,10 +52,12 @@ http:
           - https://devilsan.com
         contentTypeNosniff: true
         sslForceHost: true
+
     redirect:
       redirectScheme:
         permanent: true
         scheme: https
+
     scheme:
       headers:
         customRequestHeaders:

@@ -7,9 +7,7 @@ http:
       service: syncthing-service-rockpix
       rule: "Host(`syncthing.access.devilsan.com`) && PathPrefix(`/rockpix`)"
       middlewares:
-        - hsts
-        - redirect
-        - scheme
+        - chain-authelia
         - stripper
       tls:
         certResolver: linodev4
@@ -22,9 +20,7 @@ http:
       service: syncthing-service-rockpi
       rule: "Host(`syncthing.access.devilsan.com`) && PathPrefix(`/rockpi`)"
       middlewares:
-        - hsts
-        - redirect
-        - scheme
+        - chain-authelia
         - stripper
       tls:
         certResolver: linodev4

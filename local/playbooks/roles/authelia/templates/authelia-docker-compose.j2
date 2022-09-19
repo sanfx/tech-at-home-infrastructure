@@ -1,0 +1,49 @@
+version: '3.7'
+
+
+services:
+  authelia:
+    image: authelia/authelia
+    container_name: authelia
+    volumes:
+      - /home/{{ansible_user}}/stacks/authelia/config:/config
+    dns:
+      - {{traefik_web_ipaddress}}
+      - {{lan_rockpi_ip}}
+    networks:
+      - {{traefik_network_name}}
+    labels:
+      - 'traefik.enable=true'
+      ## HTTP Routers
+      - 'traefik.http.routers.authelia.entrypoints=https'
+      - 'traefik.http.routers.authelia.rule=Host(`{{authelia_app_name}}.{{website_tld}}`)'
+      ## Middlewares
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+      ## HTTP Services
+      - "traefik.http.routers.authelia.service=authelia-https-svc"
+      - "traefik.http.routers.authelia.tls=true"
+      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:{{authelia_web_port}}/api/verify?rd=https://{{authelia_app_name}}.{{website_tld}}'
+      - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+
+      - "traefik.http.services.authelia-https-svc.loadbalancer.passhostheader=true"
+
+      - "traefik.http.routers.authelia.tls.certresolver=linodev4"
+      - "traefik.http.routers.authelia.tls.domains[0].main=auth.access.devilsan.com"
+      - "traefik.http.routers.authelia.tls.domains[0].sans=*.access.devilsan.com"
+    expose:
+      - {{authelia_web_port}}
+    ports:
+      - target: {{authelia_web_port}}
+        published: {{authelia_web_port}}
+        mode: host
+    restart: unless-stopped
+    environment:
+      - TZ={{TIMEZONE}}
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    healthcheck:
+      disable: true
+
+networks:
+  {{traefik_network_name}}:
+    external: true
