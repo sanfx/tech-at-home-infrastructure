@@ -14,7 +14,7 @@ services:
     networks:
       - {{traefik_network_name}}
     ports:
-      - 7001:6379/tcp
+      - {{redis_port}}:6379/tcp
     restart: unless-stopped
     volumes:
       - 9f2a2d5304d932fe6acd8207848d21412f8604e8f06a0ce52da7a9719488cd8f:/data
