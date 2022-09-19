@@ -16,11 +16,10 @@ services:
       - "/home/{{ansible_user}}/stacks/pihole/custom.list:/etc/pihole/custom.list"
       - dnsmasq:/etc/dnsmasq.d
     environment:
-      - "TZ=Europe/London"
-      - "DNS1=100.80.74.107#5054"
-      - "DNS2=100.108.105.3#5054"
+      - "TZ={{TIMEZONE}}"
+      - "DNS1=100.108.105.3#5054"
       - "REV_SERVER=true"
-      - "REV_SERVER_CIDR=192.168.1.1/24" #Update these fields to match your environment
+      - "REV_SERVER_CIDR={{REV_SERVER_TARGET}}/24" #Update these fields to match your environment
       - "REV_SERVER_TARGET={{REV_SERVER_TARGET}}"
       - "REV_SERVER_DOMAIN={{app_domain_name}}"
       - "WEBPASSWORD={{pihole_web_password}}"
