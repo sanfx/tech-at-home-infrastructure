@@ -1,4 +1,5 @@
 debugging.yml
 config.yml
 .vagrant
+.vscode
 vault
