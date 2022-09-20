@@ -29,11 +29,11 @@
         Requires=docker.service
         After=docker.service
         [Service]
-        User=root
-        Group=root
-        Type=oneshot
+        User=ansible
+        Group=ansible
+        Type=idle
         RemainAfterExit=true
-        WorkingDirectory=/home/{{ansible_user}}/stacks/monitor/exporter/
+        WorkingDirectory=/usr/local/bin/
         ExecStart=/usr/local/bin/cadvisor
         [Install]
         WantedBy=multi-user.target
