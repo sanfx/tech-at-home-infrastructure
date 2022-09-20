@@ -82,21 +82,22 @@ See usage below how I run when I want to deploy to a specific target. Each of th
 [![Back to top](https://img.shields.io/badge/Back%20to%20top-lightgrey?style=flat-square)](#it-and-iot-lab-at-home-infrastructure)
 
 ## Usage
-### For docker swarm nodes only.
 
-    ```bash
-    ansible-playbook playooks/install.yml
-    ```
+For docker swarm nodes only.
+----------------------------
+```bash
+ansible-playbook playooks/install.yml
+```
 
-> If you want to run on the remote services.
-
+If you want to run on the remote services.
+------------------------------------------
 ```bash
 $ ansible-playbook -i remote/hosts --vault-password-file ~/paswd remote/playbooks/install.yml --tags "remote" --skip-tags "haproxy"
 ```
 In the above command line, I am running the playbook on remote hosts but skipping the tasks with haproxy tag.
 
-> If you want to run on the nodes locally.
-
+If you want to run on the nodes locally.
+----------------------------------------
 ```bash
 $ ansible-playbook -i local/hosts --vault-password-file ~/paswd local/playbooks/install.yml --tags "local"
 ```
@@ -110,26 +111,26 @@ Here is a list of services you can deploy on your servers at home. I am running 
 
 | # 	| Services 	| Type 	| State 	| Node 	| Instances 	| Use 	| Extra 	|
 |---	|---	|:---:	|:---:	|---	|---	|---	|---	|
-| 1 	| Nextcloud 	| HTTPS 	| Active 	| Rockpi/Rockpi X 	| 2 	| Storage, Music Player and Document Editor 	|  	|
-| 2 	| Cloudflared 	| DNS 	| Active 	| Proxy/Oracle1 	| 2 	| Network wide DNS over HTTPS 	|  	|
-| 3 	| Pihole 	| DNS 	| Active 	| Pi Zero/Rockpi X 	| 2 	| Netwrok wide Ad blocking 	| Uses cloudflared as Upstream DNS Server 	|
-| 4 	| Grafana 	| HTTPS 	| Active 	| Rockpi 	| 1 	| Service Monitoring 	|  	|
-| 5 	| Prometheus 	| HTTP 	| Active 	| Rockpi 	| 1 	| Event monitoring and alerting 	|  	|
-| 6 	| Node Exporter 	| HTTP 	| Active 	| ALL nodes 	| 5 	| Exporter for server & OS level metrics with configurable metric collectors 	|  	|
-| 7 	| Mariadb 	| TCP 	| Active 	| Rockpix 	| 1 	| Database used by Nextcloud service 	|  	|
-| 8 	| Influxdb 	| TCP 	| Down 	| Rockpi 	| 1 	| Database 	|  	|
-| 9 	| Beep 	| Audio 	| Active 	| Pi Zero 	| 1 	| Alerts with an audio beep if a critical service is goes down. 	|  	|
-| 10 	| Uptime Kuma 	| HTTPS 	| Active 	| Rockpi X 	| 1 	| Monitor services and nodes 	| sends notification when state changes via telegram 	|
-| 11 	| Syncthing 	| SSH 	| Active 	| Rockpi / Rockpi X 	| 2 	| Keeps redundant data backup stored using Nextcloud. 	|  	|
-| 12 	| Dashy 	| HTTPS 	| Down 	| - 	| 0 	| Dashboard for services 	|  	|
-| 13 	| Traefik 	| HTTPS 	| Active 	| Rockpi X 	| 1 	| Reverse Proxy for services running at home. 	|  	|
-| 14 	| Haproxy 	| HTTPS/TCP 	| Active 	| Proxy 	| 1 	| Internet facing reverse proxy to access website and nextcloud over internet. 	|  	|
-| 15 	| DNSMasq 	| DNS 	| Active 	| Rockpi 	| 1 	| DNS Service in case all instances of pihole is down. 	| Uses cloudflared as Upstream DNS Server 	|
-| 16 	| Keepalived 	| ALL 	| Active 	| Rockpi/Rockpi X 	| 2 	| Virtual IP on rockpi and rockpix gives access to duplicate instances of DNS 	|  	|
-| 17 	| Redis 	| TCP 	| Active 	| Rockpi 	| 1 	| Used by Nextcloud 	|  	|
-| 18    | Authelia  | HTTP  | Active    | Rockpi    | 1     | Used by Syncthing,Grafana,Uptime Kuma| Single Sign On |
-| 19    | CAdvisor  | TCP   | Active    | Rockpi/RockpiX | 1| Used to get docker metrics |  |
-| 20    | Redis     | TCP   | Active    | Rockpi    | 2     | Used by Nextcloud          |  |
+| 1 	| [Nextcloud][1]	| HTTPS 	| Active 	| Rockpi/Rockpi X 	| 2 	| Storage, Music Player and Document Editor 	|  	|
+| 2 	| [Cloudflared][2] | DNS 	| Active 	| Proxy/Oracle1 	| 2 	| Network wide DNS over HTTPS 	|  	|
+| 3 	| [Pihole][3] 	| DNS 	| Active 	| Pi Zero/Rockpi X 	| 2 	| Network wide Ad blocking 	| Uses cloudflared as Upstream DNS Server 	|
+| 4 	| [Grafana][4] 	| HTTPS 	| Active 	| Rockpi 	| 1 	| Service Monitoring 	|  	|
+| 5 	| [Prometheus][5] 	| HTTP 	| Active 	| Rockpi 	| 1 	| Event monitoring and alerting 	|  	|
+| 6 	| [Node Exporter][6]| HTTP 	| Active 	| ALL nodes 	| 5 	| Exporter for server & OS level metrics with configurable metric collectors 	|  	|
+| 7 	| [Mariadb][7] | TCP 	| Active 	| Rockpix 	| 1 	| Database used by Nextcloud service 	|  	|
+| 8 	| [Influxdb][8] | TCP 	| Down 	| Rockpi 	| 1 	| Database 	|  	|
+| 9 	| [Beep][9] | Audio | Active 	| Pi Zero 	| 1 	| Alerts with an audio beep if a critical service is goes down. 	|  	|
+| 10 	| [Uptime Kuma][10] | HTTPS | Active | Rockpi X | 1 | Monitor services and nodes | sends notification when state changes via telegram 	|
+| 11 	| [Syncthing][11]| SSH 	| Active 	| Rockpi / Rockpi X 	| 2 	| Keeps redundant data backup stored using Nextcloud. 	|  	|
+| 12 	| [Dashy][12] | HTTPS 	| Down 	| - 	| 0 	| Dashboard for services 	|  	|
+| 13 	| [Traefik][13] 	| HTTPS 	| Active 	| Rockpi X 	| 1 	| Reverse Proxy for services running at home. 	|  	|
+| 14 	| [Haproxy][14] 	| HTTPS/TCP 	| Active 	| Proxy 	| 1 	| Internet facing reverse proxy to access website and nextcloud over internet. 	|  	|
+| 15 	| [DNSMasq][15] | DNS | Active 	| Rockpi 	| 1 	| DNS Service in case all instances of pihole is down. 	| Uses cloudflared as Upstream DNS Server 	|
+| 16 	| [Keepalived][16] 	| ALL 	| Active 	| Rockpi/Rockpi X 	| 2 	| Virtual IP on rockpi and rockpix gives access to duplicate instances of DNS 	|  	|
+| 17 	| [Redis][17] 	| TCP 	| Active 	| Rockpi 	| 1 	| Used by Nextcloud 	|  	|
+| 18    | [Authelia][18]  | HTTP  | Active    | Rockpi    | 1     | Used by Syncthing,Grafana,Uptime Kuma| Single Sign On |
+| 19    | [CAdvisor][19]  | TCP   | Active    | Rockpi/RockpiX | 1| Used to get docker metrics |  |
+| 20    | [Dockered][20]| TCP   | Active    | Rockpi/X/Pi 0    | 3     | Used to Monitor Containers          |  |
 
 
 ## How to
@@ -168,3 +169,24 @@ As I would expect the first place for you to start would be to change the `hosts
 
 ## License
 [MIT](https://github.com/sanfx/docker-swarm-infrastructure/blob/main/LICENSE)
+
+[2]: https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/dns-over-https-client/#cloudflared
+[1]: https://nextcloud.com/
+[3]: https://pi-hole.net/
+[4]: https://grafana.com/
+[5]: https://prometheus.io/docs/introduction/overview/
+[6]: https://github.com/prometheus/node_exporter#node-exporter
+[7]: https://mariadb.org/
+[8]: https://www.influxdata.com/
+[9]: https://github.com/sanfx/Beep
+[10]: https://uptime.kuma.pet/
+[11]: https://syncthing.net/
+[12]: https://dashy.to/
+[13]: https://traefik.io/traefik/
+[14]: https://www.haproxy.com/
+[15]: https://thekelleys.org.uk/dnsmasq/doc.html
+[16]: https://keepalived.readthedocs.io/en/latest/introduction.html
+[17]: https://redis.io/
+[18]: https://homelabos.com/docs/software/authelia/
+[19]: https://github.com/google/cadvisor
+[20]: https://github.com/stefanprodan/dockerd-exporter
