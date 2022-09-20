@@ -16,6 +16,14 @@
       group: "{{ansible_user}}"
       mode: '0644'
 
+  - name: Create user database file for Authelia.
+    tags: ["authelia", "never"]
+    when: inventory_hostname == 'rockpix'
+    template:
+      src: users_database.yml.j2
+      dest: /home/{{ansible_user}}/stacks/authelia/config/users_database.yml
+      mode: 0775
+
   - name: Create docker-compose stack file for Authelia.
     tags: ["authelia", "never"]
     when: inventory_hostname == 'rockpix'
