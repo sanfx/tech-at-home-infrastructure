@@ -10,8 +10,8 @@ users:
   skumar:
     displayname: "Sanjeev Kumar"
     # Password is Authelia
-    password: "$argon2id$v=19$m=65536,t=3,p=4$YmQwTHozMUZpeDVkR1pZYw$nlCkonpz0FralwUUtq9f0J9ZgNV0c+7e8gYdCHCNg3E" 
-    email: sanjeev@outlook.in
+    password: {{authelia_user_password}}
+    email: {{authelia_user_email}}
     groups:
       - admins
       - dev
