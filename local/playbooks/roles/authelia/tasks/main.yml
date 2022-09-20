@@ -6,16 +6,6 @@
       path: "/home/{{ansible_user}}/stacks/authelia/config"
       state: directory
 
-  - name: Copy authelia users database.
-    tags: ["authelia", "config", "never"]
-    when: inventory_hostname == 'rockpix'
-    ansible.builtin.copy:
-      src: ./config
-      dest: /home/{{ansible_user}}/stacks/authelia/
-      owner: "{{ansible_user}}"
-      group: "{{ansible_user}}"
-      mode: '0644'
-
   - name: Create user database file for Authelia.
     tags: ["authelia", "never"]
     when: inventory_hostname == 'rockpix'
