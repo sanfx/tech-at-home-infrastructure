@@ -43,6 +43,8 @@ access_control:
       policy: two_factor
     - domain: syncthing.access.{{website_tld}}
       policy: one_factor
+    - domain: {{prometheus_app_name}}.access.{{website_tld}}
+      policy: two_factor
 
 session:
   name: authelia_session
