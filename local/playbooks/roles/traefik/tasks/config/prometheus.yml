@@ -3,12 +3,18 @@ http:
   routers:
     router-prometheus:
       entrypoints:
-        - "web"
-      service: prometheus-service
-      rule: "Host(`prometheus.home.local`)"
+        - "https"
+      service: prometheus-https-service
+      rule: "Host(`prometheus.access.devilsan.com`)"
+      middlewares:
+        - chain-authelia
+      tls:
+        certResolver: linodev4
+        domains:
+          - main: prometheus.access.devilsan.com
 
   services:
-    prometheus-service:
+    prometheus-https-service:
       loadBalancer:
         healthCheck:
           interval: "5s"
