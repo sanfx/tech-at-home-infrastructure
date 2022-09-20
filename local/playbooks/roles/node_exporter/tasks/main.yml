@@ -4,16 +4,6 @@
   block:
     - include_vars: "{{config_dir}}/config.yml"
 
-    - name: define node_hosts
-      set_fact:
-        node_hosts:
-          x86_64:
-            archi: amd64
-          aarch64:
-            archi: arm64
-          armv6l:
-            archi: armv6
-
     - name: download node exporter
       tags: ["node_exporter", "never"]
       get_url:

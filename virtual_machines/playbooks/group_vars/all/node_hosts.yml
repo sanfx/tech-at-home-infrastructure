@@ -1,0 +1,11 @@
+---
+node_hosts:
+  x86_64:
+    archi: amd64
+  aarch64:
+    archi: arm64
+  armv6l:
+    archi: armv6
+
+config_dir: "{{playbook_dir}}/vault/"
+ansible_python_interpreter: /usr/bin/python3

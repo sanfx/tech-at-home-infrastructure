@@ -1,7 +1,6 @@
 ---
 - hosts: localhost
   vars_files:
-    - "{{playbook_dir}}/vars.yml"
     - repo-pass.yml
 
   tasks:
@@ -20,8 +19,6 @@
   become: true
   become_method: sudo
   ignore_errors: yes
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   tasks:
     - include_vars: "{{config_dir}}/config.yml"
     - import_role:
@@ -29,8 +26,6 @@
   
 - hosts: local
   tags: ["never", "local"]
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
     - include_vars: "{{config_dir}}/config.yml"
@@ -60,6 +55,7 @@
           - "{{echo_content.stdout}}"
 
     - name: Create a network {{traefik_network_name}}, if it doesn't exists.
+      tags: ["printa", "config"]
       when: echo_content.stdout != 'web'
       docker_network:
         name: "{{traefik_network_name}}"
@@ -83,9 +79,7 @@
 
 - hosts: low_profile
   tags: ["never", "low"]
-  gather_facts: false
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
+  gather_facts: true
   become: yes
   tasks:
     - import_role:
@@ -107,8 +101,6 @@
 - hosts: localhost
   gather_facts: false
   run_once: true
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   tasks:
     - name: clean this repo.
       file:

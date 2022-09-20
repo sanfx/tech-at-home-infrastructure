@@ -2,7 +2,6 @@
 - hosts: localhost
   gather_facts: false
   vars_files:
-    - "{{playbook_dir}}/vars.yml"
     - repo-pass.yml
   tasks:
     - name: clone a repo
@@ -22,8 +21,6 @@
 
 - hosts: all
   tags: ["never", "all"]
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
       - block:
@@ -37,8 +34,6 @@
 
 - hosts: swarm_managers
   tags: ["vms", "never"]
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
     - block:
@@ -53,8 +48,6 @@
 
 - hosts: swarm_managers
   tags: ["vms", "never"]
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
     - block:
@@ -77,8 +70,6 @@
 
 - hosts: swarm_workers
   tags: ["vms", "never"]
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   become: yes
   tasks:
     - block:
@@ -94,8 +85,6 @@
 - hosts: localhost
   gather_facts: false
   run_once: true
-  vars_files:
-    - "{{playbook_dir}}/vars.yml"
   tasks:
     - name: clean this repo.
       file:

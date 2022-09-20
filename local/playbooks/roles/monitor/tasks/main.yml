@@ -40,6 +40,7 @@
       WantedBy=multi-user.target
 
 - name: forcing systemd to re-execute itself (2.8 and above)
+  tags: ["monitor", "exporter", "never"]
   when: inventory_hostname == 'rockpix'
   ansible.builtin.systemd:
     daemon_reexec: yes
