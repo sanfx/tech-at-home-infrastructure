@@ -9,3 +9,6 @@ node_hosts:
 
 config_dir: "{{playbook_dir}}/vault/"
 ansible_python_interpreter: /usr/bin/python3
+
+mqtt_broker_user: san
+mqtt_broker_pwd: $6$omTlHgwo3sfj1F7o$3vO71y5yP5tEEgwiJb1zp8Z+PRYPCUBOzzMLV3jHI13r+sBlktU29TA3wMQCJCbkN2ue10IG6F6rUMBggesdCA==

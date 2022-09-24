@@ -1,0 +1,56 @@
+---
+  - name: Verify stacks/home-assistant and its config directory exists
+    when: inventory_hostname == 'rockpix'
+    tags: ["mqtt", "never"]
+    file:
+      path: "/home/{{ansible_user}}/stacks/mqtt/config"
+      state: directory
+
+  - name: Create configuration file for MQTT broker .
+    when: inventory_hostname == 'rockpix'
+    tags: ["mqtt", "never"]
+    template:
+      src: mosquitto.conf.j2
+      dest: /home/{{ansible_user}}/stacks/mqtt/config/mosquitto.conf
+      mode: 0775
+
+  - name: Create Home Assistant docker-compose stack file.
+    when: inventory_hostname == 'rockpix'
+    tags: ["mqtt", "never"]
+    template:
+      src: mqtt-docker-compose.yml.j2
+      dest: /home/{{ansible_user}}/stacks/mqtt/docker-compose.yml
+      mode: 0775
+
+  - name: MQTT-Broker Docker Compose Systemd Service file creation
+    when: inventory_hostname == 'rockpix'
+    tags:  ["mqtt", "never"]
+    copy:
+      dest: /etc/systemd/system/mqtt-docker-compose.service
+      content: |
+        [Unit]
+        Description=Docker Compose Service for Ecli[se MQTT Broker].
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        WorkingDirectory=/home/{{ansible_user}}/stacks/mqtt/
+        ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
+        ExecStop=/usr/local/bin/docker-compose down
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: forcing systemd to re-execute itself (2.8 and above)
+    when: inventory_hostname == 'rockpix'
+    tags: ["mqtt", "never"]
+    ansible.builtin.systemd:
+      daemon_reexec: yes
+
+  - name: MQTT Broker docker-compose Systemd service activation
+    when: inventory_hostname == 'rockpix'
+    tags: ["mqtt", "never"]
+    ansible.builtin.systemd:
+      name: mqtt-docker-compose.service
+      enabled: yes
+      state: started
