@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "homeassistant/home-assistant:latest"
+    mem_limit: 640m
+    mem_reservation: 240M
+    cpus: 1
+    networks:
+      - {{traefik_network_name}}
+    volumes:
+      - /home/{{ansible_user}}/stacks/home-assistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant-http.rule=Host(`homeassistant.{{app_domain_name}}`)"
+      - "traefik.http.routers.homeassistant-http.entrypoints={{traefik_network_name}}"
+      - "traefik.http.routers.homeassistant-http.service=homeassistant-http-svc"
+      - "traefik.http.services.homeassistant-http-svc.loadbalancer.server.port=8123"
+
+      - "traefik.http.routers.homeassistant-https.entrypoints=https"
+      - "traefik.http.routers.homeassistant-https.service=homeassistant-https-svc"
+      - "traefik.http.services.homeassistant-https-svc.loadbalancer.server.port=8123"
+
+      - "traefik.http.routers.homeassistant-https.rule=Host(`ha.access.devilsan.com`)"
+      - "traefik.http.routers.homeassistant-https.tls=true"
+      - "traefik.http.routers.homeassistant-https.tls.certresolver=linodev4"
+      - "traefik.http.routers.homeassistant-https.tls.domains[0].main=ha.access.devilsan.com"
+      - "traefik.http.services.homeassistant-https-svc.loadbalancer.passhostheader=true"
+
+networks:
+  {{traefik_network_name}}:
+    external: true

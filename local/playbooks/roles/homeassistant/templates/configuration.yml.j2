@@ -1,0 +1,54 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+panel_iframe:
+  pihole_primary:
+    title: "PiHole Primary"
+    url: "http://pihole.home.local"
+    icon: mdi:pihole
+  pihole_secondary:
+    title: "Pihole Secondary"
+    url: "https://{{pihole_app_name}}.access.{{website_tld}}/"
+    icon: mdi:microsoft-visual-studio-code
+  grafana:
+    title: "Grafana"
+    url: "https://{{grafana_app_name}}.access.{{website_tld}}/"
+    icon: mdi:grafana
+  {{prometheus_app_name}}:
+    title: "Prometheus"
+    url: "https://{{prometheus_app_name}}.access.{{website_tld}}/"
+    icon: mdi:Prometheus
+  uptime_kuma:
+    title: "Uptime Kuma"
+    url: "https://{{uptime_kuma_app_name}}.access.{{website_tld}}/"
+    icon: mdi:uptime_kuma
+  traefik:
+    title: "Trafik"
+    url: "http://traefik.home.local"
+    icon: mdi:traefik
+
+
+http:
+    base_url: https://ha.access.devilsan.com
+    use_x_forwarded_for: true
+    trusted_proxies:
+      - 172.18.0.3 # Traefik
+      - 192.168.1.11 # Traefik
+
+mqtt:
+ broker: 192.168.1.11
+ port: 1883
+ client_id: home-assistant
+ username: {{mqtt_broker_user}}
+ password: {{mqtt_broker_pwd}}
+ discovery: true
+ discovery_prefix: homeassistant
+

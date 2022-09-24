@@ -76,6 +76,10 @@
         name: prometheus
     - import_role:
         name: redis
+    - import_role:
+        name: homeassistant
+    - import_role:
+        name: mqtt-broker
 
 - hosts: low_profile
   tags: ["never", "low"]

@@ -1,8 +1,8 @@
-{{traefik_web_ipaddress}}    traefik.home.local
-{{traefik_web_ipaddress}}    uptime.home.local
-{{traefik_web_ipaddress}}    pihole.home.local
+{{traefik_web_ipaddress}}    traefik.{{app_domain_name}}
+{{traefik_web_ipaddress}}    uptime.{{app_domain_name}}
+{{traefik_web_ipaddress}}    pihole.{{app_domain_name}}
 {{traefik_web_ipaddress}}    access.{{website_tld}}
-{{traefik_web_ipaddress}}    prometheus.access.devilsan.com
+{{traefik_web_ipaddress}}    prometheus.access.{{website_tld}}
 {{traefik_web_ipaddress}}    jenkins.access.{{website_tld}}
 {{traefik_web_ipaddress}}    pihole.access.{{website_tld}}
 {{traefik_web_ipaddress}}    cockpit.access.{{website_tld}}
@@ -10,3 +10,5 @@
 {{traefik_web_ipaddress}}    grafana.access.{{website_tld}}
 {{traefik_web_ipaddress}}    uptime.access.{{website_tld}}
 {{traefik_web_ipaddress}}    {{authelia_app_name}}.{{website_tld}}
+{{traefik_web_ipaddress}}    ha.access.{{website_tld}}
+{{traefik_web_ipaddress}}    homeassistant.{{app_domain_name}}
