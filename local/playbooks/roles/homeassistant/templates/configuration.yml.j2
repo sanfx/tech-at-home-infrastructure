@@ -9,6 +9,11 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
+camera:
+  - platform: ffmpeg
+    name: Tapo C60
+    input: rtsp://{{tapo_camera_user}}:{{tapo_stairs_camera_pwd}}@{{tapo_stairs_camera_ip}}:{{tapo_camera_rtsp_port}}/stream1
+
 panel_iframe:
   pihole_primary:
     title: "PiHole Primary"
