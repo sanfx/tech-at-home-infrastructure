@@ -1,0 +1,23 @@
+---
+- name: print result of swarm_worker_status {{ansible_hostname}}
+  tags: ["docker", "never"]
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  debug:
+    msg:
+      - "{{groups['swarm_manager'][0]}}"
+      - "{{hostvars[groups['swarm_manager'][0]]['worker_token']['stdout']}}"
+
+- name: is node part of swarm
+  tags: ["docker"]
+  shell: docker system info | grep Swarm | awk '{print $NF}'
+  register: swarm_worker_status
+  become: yes
+  ignore_errors: true
+
+- name: Add Docker node to exisiting Swarn.
+  tags: ["docker"]
+  when: "'swarm_worker_status.stdout' == 'inactive'"
+  shell: docker swarm join --token {{ hostvars[groups['swarm_manager'][0]]['worker_token']['stdout'] }}  {{ hostvars[groups['swarm_manager'][0]]['ansible_tailscale0']['ipv4']['address'] }}:2377
+  become: yes
+  ignore_errors: false

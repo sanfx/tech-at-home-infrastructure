@@ -1,0 +1,44 @@
+---
+- name: Check if Swarm has already been initialized
+  shell: |
+      if [ "$(docker info | grep Swarm | sed 's/Swarm: //g')" == "inactive" ]; then
+        exit 1;
+      else
+        echo true;
+      fi
+  register: swarm_status
+  ignore_errors: true
+
+- name: Initialize new Docker Swarm Leader
+  become: yes
+  tags: ["docker"]
+  shell: docker swarm init --advertise-addr={{ tailscale_proxy_ip }}
+  when: swarm_status.rc != 0 and "'proxy' == groups['swarm_manager'][0]"
+  run_once: true
+
+- name: print result of swarm_worker_status {{ansible_hostname}}
+  tags: ["docker"]
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  debug:
+    msg:
+      - "{{swarm_status.rc}}"
+      - "{{inventory_hostname}}"
+      - "{{tailscale_proxy_ip}}"
+      - "{{groups['swarm_manager'][0]}}"
+
+- name: Get the worker join-token
+  become: yes
+  ignore_errors: true
+  tags: ["docker"]
+  when: "'proxy' == groups['swarm_manager'][0]"
+  shell: docker swarm join-token --quiet worker
+  register: worker_token
+
+- name: Create an overlay network
+  tags: ["docker"]
+  when: inventory_hostname == groups['swarm_manager'][0]
+  shell: docker network create -d overlay  --attachable "swarm_consul_proxy"
+  register: swarm_worker_status
+  become: yes
+  ignore_errors: true

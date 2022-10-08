@@ -42,7 +42,7 @@
       pip:
         name: jsondiff
 
-    - name: find  docker networks exists or not.
+    - name: find docker networks exists or not.
       tags: ["printa", "config"]
       shell: echo $(docker network ls | grep "{{traefik_network_name}}" | awk '{print $2}')
       register: echo_content

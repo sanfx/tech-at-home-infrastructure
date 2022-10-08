@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  vars_files:
+    - repo-pass.yml
+
+  tasks:
+    - name: clone a repo
+      tags:
+         - always
+         - print
+      git:
+        repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
+        dest: "{{config_dir}}"
+        depth: 1
+
+- hosts: swarm_manager
+  tags: ["never", "swarm", "manager"]
+  become: yes
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: manager
+
+- hosts: swarm_workers
+  tags: ["never", "swarm", "worker"]
+  become: yes
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: worker
+
+
+- hosts: localhost
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  tasks:
+    - name: remove repo.
+      file:
+        state: absent
+        path: "{{config_dir}}"
+      tags:
+        - always
+        - printa
+        - repo-clean

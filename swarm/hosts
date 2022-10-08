@@ -1,0 +1,11 @@
+[swarm_manager]
+proxy:7729
+
+[swarm_workers]
+rockpi:7729
+rockpix
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=ansible
+ansible_ssh_private_key_file=~/ansible/.ssh/id_rsa
