@@ -5,6 +5,9 @@ rockpix
 [low_profile]
 pizero:2022
 
+[swarm_managers]
+proxy:7729
+
 [all:vars]
 ansible_connection=ssh
 ansible_user=ansible
