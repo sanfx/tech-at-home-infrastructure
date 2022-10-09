@@ -24,11 +24,12 @@
     - import_role:
         name: node_exporter
   
-- hosts: local
-  tags: ["never", "local"]
+- hosts: local, swarm_managers
   become: yes
   tasks:
-    - include_vars: "{{config_dir}}/config.yml"
+    - name: include default step variables
+      tags: ["local"]
+      include_vars: "{{config_dir}}/config.yml"
 
     - name: Install Docker Python library
       pip:
