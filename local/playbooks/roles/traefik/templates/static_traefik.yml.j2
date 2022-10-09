@@ -34,9 +34,9 @@ entryPoints:
   web:
     address: ":80"
   dns:
-    address: ":53/udp"
+    address: ":{{pihole_ftl_dns_port}}/udp"
   tcpdns:
-    address: ":53/tcp"
+    address: ":{{pihole_ftl_dns_port}}/tcp"
   https:
     address: ":443"
     http:
@@ -56,14 +56,18 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     watch: true
-    swarmMode: false
+    swarmMode: true
     exposedByDefault: false
+  consulCatalog:
+    defaultRule: "Host(`{{ '{{' }} .Name  {{ '}}' }}.access.{{website_tld}}`)"
+    endpoint:
+      address: http://{{tailscale_proxy_ip}}:8500
 
 certificatesResolvers:
   linodev4:
     acme:
       # caServer: https://acme-staging-v02.api.letsencrypt.org/directory
-      email: niceguysan@gmail.com
+      email: {{letsencrypt_email}}
       storage: /letsencrypt/acme-production.json
       dnsChallenge:
         provider: linodev4
