@@ -1,0 +1,54 @@
+---
+  - name: Verify consul.d/config/certs, server, services directories exists.
+    tags: ["never", "consul"]
+    when: "inventory_hostname != 'proxy'"
+    file:
+      path: "/etc/consul.d/{{item}}"
+      state: directory
+    with_items:
+      - config/certs
+      - server
+      - services
+
+  - name: Make sure we have a 'consul' user
+    tags: ["never", "consul"]
+    user:
+      name: consul
+      state: present
+
+  - name: Make sure we have a 'consul' group
+    tags: ["never", "consul"]
+    group:
+      name: consul
+      state: present
+
+  - name: Create docker-compose stack file for consul servers.
+    when: "inventory_hostname != 'proxy'"
+    tags: ["never", "consul"]
+    template:
+      src: client_config.json.j2
+      dest: /etc/consul.d/config.json
+      mode: 0644
+
+  - name: Create docker-compose stack file for consul servers.
+    when: "inventory_hostname != 'proxy'"
+    tags: ["never", "consul"]
+    template:
+      src: consul.service.j2
+      dest: /etc/systemd/system/consul.service
+      mode: 0644
+
+  - name: forcing systemd to re-execute itself (2.8 and above)
+    tags: ["never", "consul"]
+    when: inventory_hostname != 'proxy'
+    ansible.builtin.systemd:
+      daemon_reexec: yes
+
+  - name: Systemd service activation
+    tags: ["never", "consul"]
+    when: inventory_hostname != 'proxy'
+    become: yes
+    ansible.builtin.systemd:
+      name: consul.service
+      enabled: yes
+      state: started

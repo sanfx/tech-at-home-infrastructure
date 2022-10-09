@@ -1,0 +1,22 @@
+{
+"node_name": "{{inventory_hostname}}",
+"bind_addr": "{{ '{{'}}GetInterfaceIP \"tailscale0\"{{ '}}'}}",
+"client_addr": "127.0.0.1 {{ '{{' }} GetPrivateIPs {{ '}}'}} ",
+"data_dir": "/opt/consul",
+"disable_remote_exec": false,
+"datacenter": "mydc",
+"acl_datacenter":"mydc",
+"acl_default_policy":"allow",
+"acl_down_policy":"extend-cache",
+"encrypt": "{{consul_encrypt}}",
+"log_level": "INFO",
+"enable_syslog": true,
+"enable_debug": true,
+"leave_on_terminate": false,
+"skip_leave_on_interrupt": true,
+"rejoin_after_leave": true,
+"advertise_addr": " {{ '{{'}} GetInterfaceIP \"tailscale0\"{{ '}}'}}",
+"retry_join": [
+  "{{tailscale_proxy_ip}}"
+  ]
+}

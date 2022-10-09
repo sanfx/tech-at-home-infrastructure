@@ -1,0 +1,15 @@
+[consul_stack]
+proxy:7729
+rockpi:7729
+rockpix
+pizero:2022
+
+[consul_clients]
+rockpi:7729
+rockpix
+pizero:2022
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=ansible
+ansible_ssh_private_key_file=~/ansible/.ssh/id_rsa

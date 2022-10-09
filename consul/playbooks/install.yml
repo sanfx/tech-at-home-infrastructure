@@ -1,0 +1,69 @@
+---
+- hosts: localhost
+  vars_files:
+    - repo-pass.yml
+
+  tasks:
+    - name: clone a repo
+      tags:
+         - always
+         - print
+      git:
+        repo: "https://sanfx:{{lookup('env', 'GITHUB_TOKEN')}}@github.com/sanfx/vault.git"
+        dest: "{{config_dir}}"
+        depth: 1
+
+- hosts: consul_stack
+  tags: ["never", "consul"]
+  become: yes
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+
+    # - name: find docker networks exists or not.
+    #   tags: ["printa", "config", "consul"]
+    #   shell: echo $(docker network ls | grep "swarm_consul_proxy" | awk '{print $2}')
+    #   register: echo_content
+
+    # - name: print result
+    #   tags: ["printa", "config", "consul"]
+    #   when: echo_content.stdout == ""
+    #   debug:
+    #     msg:
+    #       - "{{echo_content.stdout}}"
+
+    # - name: Create a network swarm_consul_proxy, if it doesn't exists.
+    #   tags: ["printa", "config", "consul"]
+    #   when: echo_content.stdout != 'swarm_consul_proxy'
+    #   docker_network:
+    #     name: "swarm_consul_proxy"
+    #     driver: "overlay"
+    #     attachable: yes
+
+
+
+- hosts: consul_clients
+  tags: ["never", "consul", "client"]
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  become: yes
+  tasks:
+    - include_vars: "{{config_dir}}/config.yml"
+    - import_role:
+        name: clients
+
+
+    
+- hosts: localhost
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - "{{playbook_dir}}/vars.yml"
+  tasks:
+    - name: remove repo.
+      file:
+        state: absent
+        path: "{{config_dir}}"
+      tags:
+        - always
+        - printa
+        - repo-clean
