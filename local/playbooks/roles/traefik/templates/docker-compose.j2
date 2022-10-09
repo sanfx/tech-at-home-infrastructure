@@ -1,28 +1,33 @@
-version: '3'
+version: '3.7'
 
 services:
   reverse-proxy:
     image: traefik:2.8.3
     hostname: "{{traefik_app_name}}"
-    container_name: traefik
-    restart: unless-stopped
-    mem_limit: 512m
-    mem_reservation: 128M
-    cpus: 0.5
-    security_opt:
-      - no-new-privileges:true
     environment:
       - LINODE_TOKEN={{lookup('env', 'LINODE_TOKEN')}}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`{{traefik_app_name}}.{{app_domain_name}}`)"
-      - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
-      - "traefik.http.routers.api.entrypoints=web"
+    deploy:
+      resources:
+          limits:
+            cpus: "1"
+            memory: "640M"
+          reservations:
+            cpus: "0.50"
+            memory: "512M"
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.api.rule=Host(`{{traefik_app_name}}.{{app_domain_name}}`)"
+        - "traefik.http.routers.api.service=api@internal"
+        - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+        - "traefik.http.routers.api.entrypoints=web"
+      placement:
+        constraints: [node.hostname == rockpix]
+      restart_policy:
+        condition: on-failure
     command:
       - "--api.dashboard=true"
       - "--providers.docker"
-      - "--providers.docker.swarmMode=false"
+      - "--providers.docker.swarmMode=true"
       - "--entrypoints.web.address=:{{traefik_listen_port}}"
       - "--providers.docker.exposedByDefault=false"
       - "--providers.docker.network={{traefik_network_name}}"
@@ -57,8 +62,8 @@ services:
       - /home/{{ansible_user}}/stacks/traefik/config:/config/
       - /home/{{ansible_user}}/stacks/traefik/certs:/certs/
     networks:
-      - {{traefik_network_name}}
+      - swarm_consul_proxy
 
 networks:
-  {{traefik_network_name}}:
+  swarm_consul_proxy:
     external: true
