@@ -1,20 +1,17 @@
 ---
 - name: Verify traefik stacks directory exists.
   tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
   file:
     path: "/home/{{ansible_user}}/stacks/traefik/letsencrypt"
     state: directory
 
 - name: Copy traefik static with owner and permissions
-  tags: ["config", "never"]
+  tags: ["traefik", "never"]
   when: inventory_hostname == 'rockpix'
-  ansible.builtin.copy:
-    src: ./static
-    dest: /home/{{ansible_user}}/stacks/traefik/
-    owner: "{{ansible_user}}"
-    group: "{{ansible_user}}"
-    mode: '0644'
+  template:
+    src: static_traefik.yml.j2
+    dest: /home/{{ansible_user}}/stacks/traefik/static/traefik.yml
+    mode: 0775
 
 - name: Copy traefik dynamic with owner and permissions
   tags: ["config", "never"]
@@ -29,12 +26,12 @@
 - name: Generate admin password hash
   shell: echo $(htpasswd -nb {{traefik_admin_user}} {{traefik_admin_password}}) | sed -e s/\\$/\\$\\$/g
   tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
+  when: inventory_hostname == 'proxy'
   register: traefikpassword
 
 - name: Create docker-compose stack file.
   tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
+  when: inventory_hostname == 'proxy'
   template:
     src: docker-compose.j2
     dest: /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
@@ -53,35 +50,12 @@
   become_method: sudo
   ignore_errors: true
 
-- name: Traefik docker compose Service file creation
-  tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
-  copy:
-    dest: /etc/systemd/system/docker-compose.service
-    content: |
-      [Unit]
-      Description=Docker Compose Service for Traefik
-      Requires=docker.service
-      After=docker.service
-      [Service]
-      Type=oneshot
-      RemainAfterExit=true
-      WorkingDirectory=/home/{{ansible_user}}/stacks/traefik/
-      ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans
-      ExecStop=/usr/local/bin/docker-compose down
-      [Install]
-      WantedBy=multi-user.target
-
-- name: forcing systemd to re-execute itself (2.8 and above)
-  tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
-  ansible.builtin.systemd:
-    daemon_reexec: yes
-
-- name: Systemd service activation
-  tags: ["traefik", "never"]
-  when: inventory_hostname == 'rockpix'
-  ansible.builtin.systemd:
-    name: docker-compose.service
-    enabled: yes
-    state: started
+- name: Deploy Traefik Reverse Proxy stack from a compose file (from {{inventory_hostname}})
+  tags: ["never", "traefik"]
+  when: "inventory_hostname == 'proxy'"
+  ignore_errors: true
+  docker_stack:
+    state: present
+    name: traefik
+    compose:
+      - /home/{{ansible_user}}/stacks/traefik/docker-compose.yml
